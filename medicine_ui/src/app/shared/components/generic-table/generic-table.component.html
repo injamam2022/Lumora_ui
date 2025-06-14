@@ -1,0 +1,277 @@
+<div class="card">
+  <p-table
+    #dt1
+    *ngIf="genericTableData"
+    [value]="genericTableData.all_list"
+    dataKey="id"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [paginator]="true"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex">
+        <p-button
+          label="Clear"
+          [outlined]="true"
+          icon="pi pi-filter-slash"
+          (onClick)="clear(dt1)"
+        />
+        <!-- <p-button
+          *ngIf="addButtonStatus"
+          label="Add"
+          icon="pi pi-plus"
+          class="ml-2"
+          (onClick)="triggerAddEvent()"
+        /> -->
+        <span class="p-input-icon-left ml-auto">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="dt1.filterGlobal($event.target, 'contains')"
+            placeholder="Search keyword"
+          />
+        </span>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th
+          style="min-width: 15rem"
+          *ngFor="let column of genericTableColumns; index as index"
+        >
+          <div class="flex align-items-center">
+            {{ column.translationColumnKey }}
+            <p-columnFilter type="text" field="name" display="menu" />
+          </div>
+        </th>
+        <th style="min-width: 15rem">
+          <div class="flex align-items-center">Actions</div>
+        </th>
+        <!-- <th style="min-width: 15rem">
+          <div class="flex align-items-center">
+            Country
+            <p-columnFilter type="text" field="country.name" display="menu" />
+          </div>
+        </th>
+        <th style="min-width: 15rem">
+          <div class="flex align-items-center">
+            Agent
+            <p-columnFilter
+              field="representative"
+              matchMode="in"
+              display="menu"
+              [showMatchModes]="false"
+              [showOperator]="false"
+              [showAddButton]="false"
+            >
+              <ng-template pTemplate="header">
+                <div class="px-3 pt-3 pb-0">
+                  <span class="font-bold">Agent Picker</span>
+                </div>
+              </ng-template>
+              <ng-template
+                pTemplate="filter"
+                let-value
+                let-filter="filterCallback"
+              >
+                <p-multiSelect
+                  [options]="representatives"
+                  placeholder="Any"
+                  (onChange)="filter($event.value)"
+                  optionLabel="name"
+                >
+                  <ng-template let-option pTemplate="item">
+                    <div class="inline-block vertical-align-middle">
+                      <img
+                        [alt]="option.label"
+                        src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{
+                          option.image
+                        }}"
+                        width="24"
+                        class="vertical-align-middle"
+                      />
+                      <span class="ml-1 mt-1">{{ option.name }}</span>
+                    </div>
+                  </ng-template>
+                </p-multiSelect>
+              </ng-template>
+            </p-columnFilter>
+          </div>
+        </th>
+        <th style="min-width: 10rem">
+          <div class="flex align-items-center">
+            Date
+            <p-columnFilter type="date" field="date" display="menu" />
+          </div>
+        </th>
+        <th style="min-width: 10rem">
+          <div class="flex align-items-center">
+            Balance
+            <p-columnFilter
+              type="numeric"
+              field="balance"
+              display="menu"
+              currency="USD"
+            />
+          </div>
+        </th>
+        <th style="min-width: 10rem">
+          <div class="flex align-items-center">
+            Status
+            <p-columnFilter field="status" matchMode="equals" display="menu">
+              <ng-template
+                pTemplate="filter"
+                let-value
+                let-filter="filterCallback"
+              >
+                <p-dropdown
+                  [options]="statuses"
+                  (onChange)="filter($event.value)"
+                  placeholder="Any"
+                >
+                  <ng-template let-option pTemplate="item">
+                    <p-tag [value]="option.value" />
+                  </ng-template>
+                </p-dropdown>
+              </ng-template>
+            </p-columnFilter>
+          </div>
+        </th>
+        <th style="min-width: 10rem">
+          <div class="flex align-items-center">
+            Activity
+            <p-columnFilter
+              field="activity"
+              matchMode="between"
+              display="menu"
+              [showMatchModes]="false"
+              [showOperator]="false"
+              [showAddButton]="false"
+            >
+              <ng-template pTemplate="filter" let-filter="filterCallback">
+                <p-slider
+                  [range]="true"
+                  (onSlideEnd)="filter($event.values)"
+                  styleClass="m-3"
+                />
+                <div class="flex align-items-center px-2">
+                  <span>{{ activityValues[0] }}</span>
+                  <span>{{ activityValues[1] }}</span>
+                </div>
+              </ng-template>
+            </p-columnFilter>
+          </div>
+        </th>
+        <th style="width: 3rem">
+          <div class="flex align-items-center">
+            Verified
+            <p-columnFilter type="boolean" field="verified" display="menu" />
+          </div>
+        </th> -->
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-genericTableData>
+      <tr>
+        <td *ngFor="let column of genericTableColumns; index as index">
+          <ng-container
+            *ngIf="
+              column.mappedProperty === 'creation_status';
+              else defaultCell
+            "
+          >
+            <!-- Custom rendering for creation_status -->
+            <p>
+              {{
+                getCreationStatusSeverity(
+                  genericTableData[column.mappedProperty]
+                )
+              }}
+            </p>
+          </ng-container>
+          <ng-template #defaultCell>
+            {{ genericTableData[column.mappedProperty] }}
+          </ng-template>
+        </td>
+        <td>
+          <div class="icon-wrapper">
+            <span *ngIf="editButtonStatus"
+              ><i
+                class="pi pi-pen-to-square"
+                (click)="
+                  triggerEditEvent(
+                    getEntityId(genericTableData, entityIdMapping)
+                  )
+                "
+              ></i
+            ></span>
+            <span *ngIf="deleteButtonStatus"
+              ><i
+                class="pi pi-trash"
+                (click)="
+                  triggerDeleteEvent(
+                    getEntityId(genericTableData, entityIdMapping)
+                  )
+                "
+              ></i
+            ></span>
+
+            <span *ngIf="assignButtonStatus"
+              ><i
+                class="pi pi-users"
+                (click)="
+                  triggerAssignEvent(
+                    getEntityId(genericTableData, entityIdMapping)
+                  )
+                "
+              ></i
+            ></span>
+          </div>
+        </td>
+        <!-- <td>
+          <img
+            src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png"
+            [class]="'flag flag-' + customer.country.code"
+            style="width: 20px"
+          />
+          <span class="ml-1 vertical-align-middle">{{
+            customer.country.name
+          }}</span>
+        </td>
+        <td>
+          <img
+            [alt]="customer.representative.name"
+            src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{
+              customer.representative.image
+            }}"
+            width="32"
+            style="vertical-align: middle"
+          />
+          <span class="ml-1 vertical-align-middle">{{
+            customer.representative.name
+          }}</span>
+        </td>
+        <td>
+          {{ customer.date }}
+        </td>
+        <td>
+          {{ customer.balance }}
+        </td>
+        <td>
+          <p-tag [value]="customer.status" />
+        </td>
+        <td>
+          <p-progressBar [value]="customer.activity" [showValue]="false" />
+        </td>
+        <td class="text-center">
+          <i class="pi"></i>
+        </td> -->
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">No Data found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -1,0 +1,58 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+
+<section class="user-main-content">
+  <div class="first-step">
+    <div class="all-form-wrap">
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form">
+            <label>Process Name</label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              [(ngModel)]="processCreationData.process_name"
+            />
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form">
+            <label>Reference Document Number</label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              [(ngModel)]="processCreationData.reference_document"
+            />
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form">
+            <label>SOP ID</label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              [(ngModel)]="processCreationData.sop_id"
+            />
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form">
+            <label>Format No</label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              [(ngModel)]="processCreationData.format_number"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="button-wrap">
+        <button type="button" (click)="createProcess()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>

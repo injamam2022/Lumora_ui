@@ -1,0 +1,24 @@
+<app-header></app-header>
+<app-details-section>
+  <section class="user-main-content">
+    <div class="add-user-button">
+      <p-button
+        *ngIf="moduleAccess"
+        label="Add Department"
+        (onClick)="openAddResourceTypeDialog()"
+      />
+    </div>
+    <!--   [disabled]="!moduleAccess.data.addFlag"  -->
+    <!-- <app-generic-table
+      *ngIf="allDepartmentData && moduleAccess"
+      [genericTableColumns]="genericTableColumns"
+      [genericTableData]="allDepartmentData"
+      [entityIdMapping]="entityIdMapping.Department"
+      [editButtonStatus]="moduleAccess.data.editFlag"
+      [deleteButtonStatus]="moduleAccess.data.deleteFlag"
+      (editEvent)="editParticularData($event)"
+      (deleteEvent)="deleteParticularData($event)"
+    ></app-generic-table> -->
+  </section>
+</app-details-section>
+<!-- </section> -->

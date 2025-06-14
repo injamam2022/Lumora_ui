@@ -1,0 +1,17 @@
+<header>
+  <div class="navbar">
+    <div class="hamburger" (click)="showTheChangesForSidebar()">
+      <i class="pi pi-bars" style="font-size: 20px"></i>
+    </div>
+
+    <ul>
+      <li>
+        <!-- <app-choose-facility-dropdown
+          [optionForUserFacilityDropdown]="optionForUserFacility"
+        ></app-choose-facility-dropdown> -->
+      </li>
+      <li (click)="logoutUser()" class="logout-link">Logout</li>
+    </ul>
+  </div>
+</header>
+<app-sidebar [fetchSidebarClass]="extendSidebarClass"></app-sidebar>

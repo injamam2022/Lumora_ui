@@ -1,0 +1,283 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+
+<section class="user-main-content">
+  <div class="first-step">
+    <div class="all-form-wrap">
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form">
+            <label>Process Name <span class="required">*</span></label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              placeholder="Enter process name"
+              [(ngModel)]="processCreationData.data.process_name"
+            />
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form">
+            <label>Reference Document Number</label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              placeholder="Enter reference number"
+              [(ngModel)]="processCreationData.data.reference_document"
+            />
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form">
+            <label>SOP ID <span class="required">*</span></label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              placeholder="Enter SOP ID"
+              [(ngModel)]="processCreationData.data.sop_id"
+            />
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form">
+            <label>Format No</label>
+            <input
+              type="text"
+              pInputText
+              class="form-control"
+              placeholder="Enter format number"
+              [(ngModel)]="processCreationData.data.format_number"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+   
+  </div>
+
+  <div class="form-builder-btn">
+    <button
+      type="button"
+      (click)="setTab('processCreation')"
+      [class.active]="activeTab === 'processCreation'"
+    >
+      <i class="pi pi-list"></i>
+      Process Creation
+    </button>
+    <button
+      type="button"
+      (click)="setTab('BranchingRules')"
+      [class.active]="activeTab === 'BranchingRules'"
+    >
+      <i class="pi pi-sitemap"></i>
+      Branching Rules
+    </button>
+  </div>
+
+  <div class="task-container" *ngIf="activeTab === 'processCreation'">
+    <div class="task-and-form">
+      <div class="task-row" *ngIf="processCreationData.data">
+        <div
+          class="task-all-wrap"
+          *ngFor="let stage of processCreationData.data.stages; let i = index"
+        >
+          <div 
+            class="stage-card" 
+            [class.selected-stage]="stage.stage_id === selectedStageId"
+            (click)="showSingleStageInfo(stage.stage_id)"
+            style="cursor: pointer;"
+          >
+            <p-card>
+              <div class="stage-heading">
+                <h4>Stage {{ i + 1 }}</h4>
+                <div class="action" (click)="$event.stopPropagation()">
+                  <button title="Copy Stage">
+                    <i class="pi pi-copy"></i>
+                  </button>
+                  <button title="Delete Stage" (click)="removeStage(stage.stage_id)">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form" (click)="$event.stopPropagation()">
+                <input 
+                  type="text" 
+                  pInputText 
+                  placeholder="Enter stage name"
+                  [(ngModel)]="stage.stage_name"
+                  (ngModelChange)="onStageNameChange(stage)"
+                />
+              </div>
+            </p-card>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card-wrap" *ngIf="stageWiseTaskList">
+        <div
+          class="form-card"
+          *ngFor="let task of stageWiseTaskList.data; let j = index"
+        >
+          <div class="heading">
+            <div class="title-wrapper">
+              <h2>Task {{ j + 1 }}</h2>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  pInputText
+                  class="form-control"
+                  placeholder="Enter task name"
+                  [(ngModel)]="task.task_name"
+                  (ngModelChange)="onTaskNameChange(task)"
+                />
+              </div>
+            </div>
+            <div class="action">
+              <button title="Copy Task">
+                <i class="pi pi-copy"></i>
+              </button>
+              <button title="Delete Task" (click)="removeTask(j)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div 
+            class="form-card parameters-list" 
+            *ngIf="task.parameters?.length"
+            cdkDropList
+            (cdkDropListDropped)="onParameterDrop($event, j)"
+          >
+            <div
+              *ngFor="let form of task.parameters; let k = index"
+              class="eachParamsWrpper"
+              cdkDrag
+            >
+              <div class="parameter-header">
+                <div class="drag-handle" cdkDragHandle>
+                  <i class="pi pi-bars"></i>
+                </div>
+                <label>{{ form.parameter_name }}</label>
+                <button class="remove-param" (click)="removeForm(j, k)" title="Remove Parameter">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+
+              <div class="form-switcher-wrapper">
+                <ng-container [ngSwitch]="form.parameter_type_id">
+                  <div class="form-wrap" *ngSwitchCase="'1'">
+                    <input
+                      type="text"
+                      pInputText
+                      class="form-control"
+                      placeholder="Enter text"
+                      [(ngModel)]="form.parameter_description"
+                      (ngModelChange)="onParameterInputChange(form, $event)"
+                    />
+                    <small class="p-error" *ngIf="parameterValidationErrors.get(form.parameter_id!) && form.parameter_type_id === '1'">
+                      {{ parameterValidationErrors.get(form.parameter_id!) }}
+                    </small>
+                  </div>
+                  <div class="form-wrap" *ngSwitchCase="'2'">
+                    <textarea
+                      rows="5"
+                      pTextarea
+                      class="form-control"
+                      placeholder="Enter description"
+                      [(ngModel)]="form.parameter_description"
+                      (ngModelChange)="onParameterInputChange(form, $event)"
+                    ></textarea>
+                    <small class="p-error" *ngIf="parameterValidationErrors.get(form.parameter_id!) && form.parameter_type_id === '2'">
+                      {{ parameterValidationErrors.get(form.parameter_id!) }}
+                    </small>
+                  </div>
+                  <div class="form-wrap" *ngSwitchCase="'4'">
+                    <input
+                      type="number"
+                      pInputText
+                      class="form-control"
+                      placeholder="Enter number"
+                      [(ngModel)]="form.parameter_description"
+                      (ngModelChange)="onParameterInputChange(form, $event)"
+                    />
+                    <small class="p-error" *ngIf="parameterValidationErrors.get(form.parameter_id!) && form.parameter_type_id === '4'">
+                      {{ parameterValidationErrors.get(form.parameter_id!) }}
+                    </small>
+                  </div>
+                  <div class="form-wrap" *ngSwitchCase="'3'">
+                    <input
+                      type="datetime-local"
+                      pInputText
+                      class="form-control"
+                      [(ngModel)]="form.parameter_description"
+                    />
+                  </div>
+                  <div class="form-wrap" *ngSwitchCase="'5'">
+                    <p-multiSelect
+                      [options]="form.options"
+                      [(ngModel)]="form.option_selected"
+                      optionLabel="options_for_parameter"
+                      optionValue="parameter_options_id"
+                      placeholder="Select options"
+                      [style]="{'width': '100%'}"
+                    >
+                    </p-multiSelect>
+                  </div>
+                  <p *ngSwitchDefault>Unknown Type</p>
+                </ng-container>
+              </div>
+
+              <div class="drag-preview" *cdkDragPreview>
+                <div class="parameter-preview">
+                  <i class="pi pi-bars"></i>
+                  <span>{{ form.parameter_name }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="button-wrap">
+            <button
+              class="add-new-parameters"
+              (click)="addParameters(j, task.task_id)"
+            >
+              <i class="pi pi-plus-circle"></i> Add Parameters
+            </button>
+          </div>
+        </div>
+        
+        <div class="button-wrapper">
+          <button class="add-new-task" (click)="addNewTask()">
+            <i class="pi pi-plus-circle"></i> Add New Task
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-wrapper">
+      <button (click)="addNewStage()" class="add-new-stage">
+        <i class="pi pi-plus-circle"></i> Add New Stage
+      </button>
+    </div>
+
+    <div class="submit-wrapper">
+      <button class="submit-button" (click)="submitProcess()">
+        <i class="pi pi-check-circle"></i> Submit Process
+      </button>
+    </div>
+  </div>
+
+  <div class="branching-messages-display">
+    <div *ngFor="let message of activeBranchingMessages | keyvalue" class="branching-message-card">
+      <p>{{ message.value }}</p>
+    </div>
+  </div>
+
+  <div class="branching-role" *ngIf="activeTab === 'BranchingRules'">
+    <app-branching-rules [processId]="processId"></app-branching-rules>
+  </div>    
+</section>

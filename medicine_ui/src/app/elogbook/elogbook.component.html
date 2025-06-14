@@ -1,0 +1,17 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+  <div class="add-user-button">
+    <p-button (onClick)="openAddElogbookPage()" label="Add E-Logbook" />
+  </div>
+  <app-generic-table 
+    *ngIf="allElogbookListData"
+    [genericTableColumns]="genericTableColumns"
+    [genericTableData]="allElogbookListData"
+    [editButtonStatus]="true"
+    [deleteButtonStatus]="true"
+    (editEvent)="editParticularData($event)"
+  ></app-generic-table> 
+
+ 
+</section>

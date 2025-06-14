@@ -1,0 +1,28 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+  <div class="add-user-button">
+    <p-button
+      label="Add User"
+      *ngIf="addButtonStatus"
+      (onClick)="openAddUserDialog()"
+    />
+  </div>
+  <!--  [disabled]="!moduleAccess.data.addFlag"  -->
+  <app-generic-table
+    *ngIf="allUserData"
+    [genericTableData]="allUserData"
+    [genericTableColumns]="genericTableColumns"
+    [entityIdMapping]="entityIdMapping.User"
+    (editEvent)="editParticularData($event)"
+    (deleteEvent)="deleteParticularData($event)"
+    [editButtonStatus]="editButtonStatus"
+    [deleteButtonStatus]="deleteButtonStatus"
+  ></app-generic-table>
+  <!--   -->
+
+  <app-change-log
+    *ngIf="changeLogData"
+    [changeLogData]="changeLogData"
+  ></app-change-log>
+</section>

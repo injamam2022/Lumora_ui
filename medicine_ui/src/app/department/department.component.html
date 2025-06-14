@@ -1,0 +1,26 @@
+<app-header></app-header>
+<app-details-section>
+  <section class="user-main-content">
+    <div class="add-user-button">
+      <p-button
+        *ngIf="moduleAccess"
+        label="Add Department"
+        (onClick)="openAddRoleDialog()"
+      />
+    </div>
+    <!-- [disabled]="!moduleAccess.data.addFlag" -->
+    <!--  -->
+    <app-generic-table
+      *ngIf="allDepartmentData"
+      [genericTableData]="allDepartmentData"
+      [genericTableColumns]="genericTableColumns"
+      [entityIdMapping]="entityIdMapping.Department"
+      [editButtonStatus]="editButtonStatus"
+      [deleteButtonStatus]="deleteButtonStatus"
+      (editEvent)="editParticularData($event)"
+      (deleteEvent)="deleteParticularData($event)"
+    ></app-generic-table>
+    <!--   -->
+  </section>
+</app-details-section>
+<!-- </section> -->

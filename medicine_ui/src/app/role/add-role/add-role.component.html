@@ -1,0 +1,59 @@
+<div class="add-userwrapper">
+  <form #roleCreationForm="ngForm" (ngSubmit)="addCreationRole()">
+    <div class="formgroup">
+      <p>Role</p>
+      <input
+        type="text"
+        pInputText
+        name="role_name"
+        [(ngModel)]="addRolePayload.role_name"
+        placeholder="Enter Role"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Choose Facility</p>
+      <p-multiSelect
+        [options]="allFacilityData.all_list"
+        [(ngModel)]="addRolePayload.facilities"
+        name="facilities"
+        optionLabel="location_name"
+        optionValue="facility_id"
+        placeholder="Select Facility"
+        [filter]="true"
+        [appendTo]="'body'"
+        [overlayOptions]="{
+          showTransitionOptions: '0ms',
+          hideTransitionOptions: '0ms'
+        }"
+      ></p-multiSelect>
+    </div>
+
+    <div class="formgroup">
+      <p>Choose Department</p>
+      <p-dropdown
+        [options]="allDepartmentData.all_list"
+        [(ngModel)]="addRolePayload.department_id"
+        name="departmentId"
+        optionValue="department_id"
+        optionLabel="department_name"
+        placeholder="Select Department"
+        [filter]="true"
+        [appendTo]="'body'"
+        [overlayOptions]="{
+          showTransitionOptions: '0ms',
+          hideTransitionOptions: '0ms'
+        }"
+        required
+      ></p-dropdown>
+    </div>
+
+    <div class="buttonwrap">
+      <p-button
+        type="submit"
+        label="Submit"
+        [disabled]="roleCreationForm.form.invalid"
+      ></p-button>
+    </div>
+  </form>
+</div>

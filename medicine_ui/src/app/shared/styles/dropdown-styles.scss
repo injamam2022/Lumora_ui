@@ -1,0 +1,120 @@
+// Shared styles for p-dropdown and p-multiSelect components
+:host ::ng-deep {
+  .p-dropdown,
+  .p-multiselect {
+    width: 100%;
+    min-width: 250px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
+    .p-dropdown-label,
+    .p-multiselect-label {
+      padding: 12px 16px;
+      color: #64748b;
+    }
+
+    &.p-focus {
+      border-color: #1d84ff;
+      box-shadow: 0 0 0 2px rgba(29, 132, 255, 0.1);
+    }
+
+    &:hover {
+      border-color: #1d84ff;
+    }
+  }
+
+  .p-dropdown-panel,
+  .p-multiselect-panel {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 4px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    
+    .p-dropdown-filter-container,
+    .p-multiselect-filter-container {
+      padding: 12px 16px;
+      
+      .p-dropdown-filter,
+      .p-multiselect-filter {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        width: 100%;
+        
+        &:focus {
+          outline: none;
+          border-color: #1d84ff;
+          box-shadow: 0 0 0 2px rgba(29, 132, 255, 0.1);
+        }
+      }
+    }
+    
+    .p-dropdown-items,
+    .p-multiselect-items {
+      padding: 8px 0;
+    }
+    
+    .p-dropdown-item,
+    .p-multiselect-item {
+      padding: 10px 16px;
+      color: #475569;
+      
+      &:hover {
+        background: #f8fafc;
+      }
+      
+      &.p-highlight {
+        background: #e8f2ff;
+        color: #1d84ff;
+      }
+    }
+  }
+
+  // Additional styles for multiselect
+  .p-multiselect {
+    .p-multiselect-token {
+      background: #e8f2ff;
+      color: #1d84ff;
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin: 2px;
+
+      .p-multiselect-token-icon {
+        margin-left: 8px;
+        color: #1d84ff;
+      }
+    }
+
+    .p-multiselect-trigger {
+      width: 40px;
+      padding: 0 12px;
+    }
+  }
+
+  // Header styles for multiselect panel
+  .p-multiselect-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+
+    .p-checkbox {
+      margin-right: 8px;
+    }
+
+    .p-multiselect-filter-container {
+      margin-top: 8px;
+    }
+
+    .p-multiselect-close {
+      width: 32px;
+      height: 32px;
+      color: #64748b;
+      
+      &:hover {
+        background: #f8fafc;
+        color: #1d84ff;
+      }
+    }
+  }
+} 

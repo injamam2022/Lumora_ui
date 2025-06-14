@@ -1,0 +1,19 @@
+<div class="cmt-static-dialog-text-p-dialog">
+  <div class="cmt-static-dialog-text-icon">
+    <span class="cmt-dialog-header"><span></span> {{ dialogTitle }}</span>
+  </div>
+</div>
+
+<div class="cmt-static-dialog-text-message">
+  {{ dialogMessage }}
+</div>
+
+<div class="cmt-static-dialog-text-footer">
+  <button
+    class="cmt-static-dialog-text-button"
+    pButton
+    type="button"
+    label="OK"
+    (click)="closeDialog()"
+  ></button>
+</div>

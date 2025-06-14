@@ -1,0 +1,24 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+  <!-- *ngIf="moduleAccess" -->
+  <div class="add-user-button">
+    <p-button (onClick)="openAddProcessPage()" label="Add Process" />
+  </div>
+  <!-- [disabled]="!moduleAccess.data.addFlag"
+      (onClick)="openAddRoleDialog()" -->
+  <app-generic-table
+    *ngIf="allProcessListData"
+    [genericTableColumns]="genericTableColumns"
+    [genericTableData]="allProcessListData"
+    [entityIdMapping]="entityIdMapping.Process"
+    (editEvent)="editParticularData($event)"
+    (assignEvent)="assignProcessData($event)"
+    [editButtonStatus]="true"
+    [deleteButtonStatus]="true"
+    [assignButtonStatus]="true"
+  ></app-generic-table>
+
+ 
+</section>
+<!--  (deleteEvent)="deleteParticularData($event)" -->

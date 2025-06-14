@@ -1,0 +1,26 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+  <div class="add-user-button">
+    <p-button
+      *ngIf="moduleAccess"
+      label="Add Role"
+      (onClick)="openAddRoleDialog()"
+    />
+  </div>
+  <!--  [disabled]="!moduleAccess.data.addFlag" -->
+  <!--  -->
+  {{ moduleAccess | json }}
+  <app-generic-table
+    *ngIf="allRoleData"
+    [genericTableColumns]="genericTableColumns"
+    [genericTableData]="allRoleData"
+    [entityIdMapping]="entityIdMapping.Role"
+    [entityIdMapping]="entityIdMapping.Role"
+    [editButtonStatus]="editButtonStatus"
+    [deleteButtonStatus]="deleteButtonStatus"
+    (editEvent)="editParticularData($event)"
+    (deleteEvent)="deleteParticularData($event)"
+  ></app-generic-table>
+  <!--    -->
+</section>

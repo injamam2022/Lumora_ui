@@ -1,0 +1,209 @@
+.user-main-content {
+  margin-top: 100px;
+  margin-left: 330px;
+  margin-right: 15px;
+  transition: 0.5s;
+  background: #fff;
+  padding: 30px;
+  transition: 0.5s;
+  &.maincont {
+    padding-left: 315px;
+  }
+}
+
+.add-user-button {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+:host ::ng-deep .add-user-button button {
+  background: #091835;
+  border: 0;
+  margin-top: 20px;
+  display: flex;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th .flex {
+  display: flex;
+  align-items: center;
+}
+:host ::ng-deep .p-datatable-header > div {
+  display: flex;
+  justify-content: space-between;
+}
+:host ::ng-deep .p-datatable > .p-datatable-wrapper {
+  height: calc(100vh - 200px);
+}
+:host ::ng-deep .p-datatable-thead {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+
+
+.add-userwrapper {
+    padding: 1.5rem;
+  
+    .formgroup {
+      margin-bottom: 1rem;
+  
+      p {
+        font-size: 14px;
+        font-weight: 500;
+        color: #475569;
+        margin-bottom: 0.5rem;
+      }
+  
+      input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #475569;
+        
+        &:focus {
+          outline: none;
+          border-color: #1d84ff;
+          box-shadow: 0 0 0 2px rgba(29, 132, 255, 0.1);
+        }
+  
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+    }
+  
+    .buttonwrap {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+  
+  :host ::ng-deep {
+    .p-dialog-content {
+      .p-dropdown, 
+      .p-multiselect {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+  
+        .p-dropdown-label,
+        .p-multiselect-label {
+          padding: 0.75rem 1rem;
+          color: #475569;
+        }
+  
+        &.p-focus {
+          border-color: #1d84ff;
+          box-shadow: 0 0 0 2px rgba(29, 132, 255, 0.1);
+        }
+  
+        &:hover {
+          border-color: #1d84ff;
+        }
+      }
+    }
+  
+    .p-button {
+      background: #1d84ff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      
+      &:enabled:hover {
+        background: #1a75e6;
+      }
+      
+      &:enabled:active {
+        background: #1667cc;
+      }
+      
+      &:disabled {
+        background: #cbd5e1;
+      }
+    }
+  
+    // Dropdown panel styles
+    .p-dropdown-panel,
+    .p-multiselect-panel {
+      &.p-component {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-top: 4px;
+        z-index: 1000;
+      }
+  
+      .p-dropdown-header,
+      .p-multiselect-header {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e2e8f0;
+  
+        .p-dropdown-filter,
+        .p-multiselect-filter {
+          padding: 0.5rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          margin-right: 0.5rem;
+          
+          &:focus {
+            outline: none;
+            border-color: #1d84ff;
+            box-shadow: 0 0 0 2px rgba(29, 132, 255, 0.1);
+          }
+        }
+      }
+  
+      .p-dropdown-items,
+      .p-multiselect-items {
+        padding: 0.5rem 0;
+  
+        .p-dropdown-item,
+        .p-multiselect-item {
+          padding: 0.75rem 1rem;
+          color: #475569;
+          
+          &:hover {
+            background: #f8fafc;
+          }
+          
+          &.p-highlight {
+            background: #e8f2ff;
+            color: #1d84ff;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  
+    // MultiSelect specific styles
+    .p-multiselect {
+      .p-multiselect-token {
+        background: #e8f2ff;
+        color: #1d84ff;
+        border-radius: 4px;
+        padding: 0.25rem 0.5rem;
+        margin: 0.125rem;
+  
+        .p-multiselect-token-icon {
+          margin-left: 0.5rem;
+          color: #1d84ff;
+  
+          &:hover {
+            color: #1667cc;
+          }
+        }
+      }
+    }
+  }
+  

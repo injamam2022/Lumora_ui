@@ -1,0 +1,21 @@
+<div class="facility-page">
+  <div class="facility-card-section">
+    <p-card class="card-box">
+      <div class="card-content">
+        <p>Choose Facility</p>
+
+        <p-dropdown
+          *ngIf="allFacilityData"
+          [options]="allFacilityData.all_list"
+          name="facility"
+          optionValue="facility_id"
+          optionLabel="location_name"
+          placeholder="Choose Facility"
+          [filter]="true"
+          [appendTo]="'body'"
+          required=""
+        />
+      </div>
+    </p-card>
+  </div>
+</div>

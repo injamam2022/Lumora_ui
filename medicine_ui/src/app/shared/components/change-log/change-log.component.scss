@@ -1,0 +1,17 @@
+.change-log-wrap {
+  margin-top: 50px;
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+    line-height: 30px;
+    margin: 0;
+    text-align: center;
+  }
+}
+:host ::ng-deep .change-log-wrap .p-datatable {
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  margin-top: 30px;
+}

@@ -1,0 +1,12 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+  <div class="add-user-button">
+    <!-- <p-button label="Add Role" (onClick)="openAddRoleDialog()" /> -->
+  </div>
+  <!--   [genericTableData]="allModuleData" -->
+  <app-generic-table
+    *ngIf="allRoleData"
+    [genericTableColumns]="genericTableColumns"
+  ></app-generic-table>
+</section>

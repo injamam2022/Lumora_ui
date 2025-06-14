@@ -1,0 +1,105 @@
+<div class="add-userwrapper">
+  <form #facilityCreationForm="ngForm" (ngSubmit)="addCreation()">
+    <div class="formgroup">
+      <p>Choose Country</p>
+      <!-- [(ngModel)]="addRolePayload." -->
+      <p-dropdown
+        *ngIf="allCountryList"
+        [ngModel]="createFacilityPayload.country_id"
+        [options]="allCountryList.all_list"
+        name="departmentId"
+        optionValue="country_id"
+        optionLabel="country_name"
+        placeholder="Select Country"
+        (onChange)="getTheStates($event.value)"
+        required=""
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Choose State</p>
+      <!-- [(ngModel)]="addRolePayload." -->
+      <p-dropdown
+        *ngIf="allStateList"
+        [options]="allStateList.all_list"
+        [ngModel]="createFacilityPayload.state_id"
+        name="stateId"
+        optionValue="state_id"
+        optionLabel="state_name"
+        placeholder="Select State"
+        (onChange)="getTheCities($event.value)"
+        required=""
+      />
+    </div>
+
+    <div class="formgroup" *ngIf="allCityList">
+      <p>Choose City</p>
+      <!-- [(ngModel)]="addRolePayload." -->
+      <p-dropdown
+        [options]="allCityList.all_list"
+        [ngModel]="createFacilityPayload.city_id"
+        name="cityId"
+        optionValue="city_id"
+        optionLabel="city_name"
+        placeholder="Select City"
+        required=""
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Location Name</p>
+      <input
+        type="text"
+        pInputText
+        name="locationName"
+        [(ngModel)]="createFacilityPayload.location_name"
+        placeholder="Enter Location Name"
+        required
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Facility Full Address</p>
+      <input
+        type="text"
+        pInputText
+        name="full_address"
+        [(ngModel)]="createFacilityPayload.location_full_address"
+        placeholder="Enter Full Address"
+        required
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Facility Phone Number</p>
+      <input
+        type="text"
+        pInputText
+        name="phone"
+        [(ngModel)]="createFacilityPayload.location_phone"
+        placeholder="Enter Phone Number"
+        required
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Facility Postal Code</p>
+      <input
+        type="text"
+        pInputText
+        name="postcode"
+        [(ngModel)]="createFacilityPayload.location_postcode"
+        placeholder="Enter Postal Code"
+        required
+      />
+    </div>
+
+    <div class="buttonwrap">
+      <p-button
+        type="submit"
+        label="Submit"
+        [disabled]="facilityCreationForm.form.invalid"
+      />
+    </div>
+  </form>
+</div>

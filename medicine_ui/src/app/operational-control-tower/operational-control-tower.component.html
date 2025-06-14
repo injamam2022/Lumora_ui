@@ -1,0 +1,38 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+
+<div class="operational-control-tower-container">
+  <h2>Plant Productivity</h2>
+  <div class="charts-container">
+    <p-card header="Production">
+      <p-chart type="bar" [data]="productivityChartData" [options]="productivityChartOptions"></p-chart>
+    </p-card>
+
+    <p-card header="Utilization">
+       <p-chart type="bar" [data]="utilizationChartData" [options]="utilizationChartOptions"></p-chart>
+    </p-card>
+
+     <p-card header="OEE">
+       <p-chart type="bar" [data]="oeeChartData" [options]="oeeChartOptions"></p-chart>
+    </p-card>
+    
+
+    </div>
+    <div class="charts-container">
+        <p-card header="Production">
+          <p-chart type="bar" [data]="productivityChartData" [options]="productivityChartOptions"></p-chart>
+        </p-card>
+    
+        <p-card header="Utilization">
+           <p-chart type="bar" [data]="utilizationChartData" [options]="utilizationChartOptions"></p-chart>
+        </p-card>
+    
+         <p-card header="OEE">
+           <p-chart type="bar" [data]="oeeChartData" [options]="oeeChartOptions"></p-chart>
+        </p-card>
+        
+    
+        </div>
+</div>
+</section>

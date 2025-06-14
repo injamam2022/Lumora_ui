@@ -1,0 +1,22 @@
+.facility-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom center;
+}
+.card-content p {
+  font-size: 20px;
+  font-weight: 500;
+}
+.card-content {
+  text-align: center;
+}
+
+:host ::ng-deep .p-card .p-card-body {
+  padding: 31px 53px 57px 53px;
+  border: 4px solid #000;
+}

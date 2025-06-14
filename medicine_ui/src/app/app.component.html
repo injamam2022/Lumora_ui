@@ -1,0 +1,5 @@
+<router-outlet></router-outlet>
+<div class="loading-spinner-container" *ngIf="loading$ | async">
+  <p-progressSpinner ariaLabel="loading" />
+</div>
+<p-toast position="bottom-center"></p-toast>

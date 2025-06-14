@@ -1,0 +1,24 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+<section class="user-main-content">
+  <div class="add-user-button">
+    <p-button
+      *ngIf="moduleAccess"
+      label="Add Facility"
+      (onClick)="openAddFacilityDialog()"
+    />
+  </div>
+  <!--  [disabled]="!moduleAccess.data.addFlag" -->
+  <!--   -->
+  <app-generic-table
+    *ngIf="allFacilityData"
+    [genericTableColumns]="genericTableColumns"
+    [genericTableData]="allFacilityData"
+    [entityIdMapping]="entityIdMapping.Facility"
+    [entityIdMapping]="entityIdMapping.Facility"
+    (editEvent)="editParticularData($event)"
+    (deleteEvent)="deleteParticularData($event)"
+    [editButtonStatus]="editButtonStatus"
+    [deleteButtonStatus]="deleteButtonStatus"
+  ></app-generic-table>
+</section>

@@ -1,0 +1,30 @@
+<div class="parameter-dialog-wrapper">
+  <form #parameterForm="ngForm" (ngSubmit)="saveParameter()">
+    <div class="formgroup">
+      <p>Parameter Name</p>
+      <input type="text" pInputText [(ngModel)]="parameter.parameter_name" name="parameterName" required />
+    </div>
+    
+    <div class="formgroup">
+      <p>Parameter Type</p>
+      <p-dropdown 
+        [options]="parameterTypes" 
+        [(ngModel)]="parameter.parameter_type_id"
+        optionLabel="parameter_type_name"
+        optionValue="parameter_type_id"
+        placeholder="Select Parameter Type"
+        name="parameterType"
+        required>
+      </p-dropdown>
+    </div>
+
+    <div class="formgroup">
+      <p>Description</p>
+      <input type="text" pInputText [(ngModel)]="parameter.parameter_description" name="parameterDescription" required />
+    </div>
+
+    <div class="buttonwrap">
+      <p-button type="submit" label="Save Parameter" [disabled]="parameterForm.form.invalid"></p-button>
+    </div>
+  </form>
+</div>

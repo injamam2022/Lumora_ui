@@ -1,0 +1,123 @@
+.sidebar {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  // max-width: 70px;
+  max-width: 300px;
+  background-color: #fff;
+  box-shadow: 1px 0px 4px 1px rgba(0, 0, 0, 0.3);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding: 20px 0;
+  z-index: 991;
+  transition: 0.5s;
+  overflow-x: hidden;
+  &.bigsidebar {
+    max-width: 300px;
+    overflow-x: auto;
+  }
+  .logo {
+    width: 100%;
+    height: auto;
+    text-align: center;
+    img {
+      width: 150px;
+      height: auto;
+      margin: 0px auto;
+    }
+  }
+  .menu-list {
+    width: 100%;
+    text-align: left;
+    margin-top: 30px;
+    ::ng-deep .p-panelmenu {
+      .p-panelmenu-header {
+        .p-panelmenu-header-content {
+          background-color: transparent;
+          padding: 0;
+          border-radius: 0;
+          border: 0;
+          border-bottom: 1px solid #ccc;
+          position: relative;
+          padding: 20px;
+          width: 100%;
+          a {
+            text-decoration: none;
+            display: flex;
+            justify-content: flex-start;
+            gap: 29px;
+          }
+        }
+      }
+      span {
+        margin-left: 5px;
+        color: #374151;
+      }
+      .pi-angle-down {
+        position: absolute;
+        right: 15px;
+      }
+    }
+    ::ng-deep .p-panelmenu .p-panelmenu-content {
+      background-color: transparent;
+      border: 0;
+      ul {
+        li {
+          padding: 0px;
+          a {
+            text-decoration: none;
+          }
+          span {
+            color: #374151;
+          }
+        }
+      }
+      .p-menuitem-content {
+        padding: 20px 40px;
+      }
+    }
+    ::ng-deep
+      .p-panelmenu
+      .p-panelmenu-header
+      .p-panelmenu-header-content
+      .p-panelmenu-header-action {
+      padding: 20px;
+      position: relative;
+      .p-icon-wrapper {
+        position: absolute;
+        right: 20px;
+      }
+    }
+    ::ng-deep
+      .p-panelmenu
+      .p-panelmenu-content
+      .p-menuitem
+      .p-menuitem-content
+      .p-menuitem-link
+      .p-submenu-icon {
+      position: absolute;
+      right: 20px;
+      top: 10px;
+    }
+  }
+}
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* Track */
+.sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+.sidebar::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

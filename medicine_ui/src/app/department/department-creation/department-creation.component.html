@@ -1,0 +1,23 @@
+<div class="add-userwrapper">
+  <form #roleCreationForm="ngForm" (ngSubmit)="addCreation()">
+    <div class="formgroup">
+      <p>Department Name</p>
+      <input
+        type="text"
+        pInputText
+        name="lastName"
+        [(ngModel)]="addDepartmentPayload.departmentName"
+        placeholder="Enter Department Name"
+        required
+      />
+    </div>
+
+    <div class="buttonwrap">
+      <p-button
+        type="submit"
+        label="Submit"
+        [disabled]="roleCreationForm.form.invalid"
+      />
+    </div>
+  </form>
+</div>

@@ -1,0 +1,10 @@
+.icon-wrapper {
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+}
+:host ::ng-deep .p-datatable {
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+}

@@ -1,0 +1,42 @@
+<div class="login-page" style="background-image: url(images/login-screen.jpg)">
+  <div class="login-wrap">
+    <div class="logo">
+      <img src="images/logo.jpg" />
+    </div>
+    <p-card class="card-box">
+      <form #loginUserForm="ngForm" (ngSubmit)="onSubmitLoginCheck()">
+        <div class="formgroup">
+          <p>User Name</p>
+          <input
+            type="text"
+            pInputText
+            name="userName"
+            placeholder="User Name"
+            [(ngModel)]="loginUser.email_id"
+            required
+          />
+        </div>
+        <div class="formgroup">
+          <p>Password</p>
+          <p-password
+            styleClass="passowrd-form"
+            name="password"
+            placeholder="Password"
+            [(ngModel)]="loginUser.password"
+            [feedback]="false"
+            required
+          />
+        </div>
+
+        <div class="formgroup">
+          <!-- <p-button class="submit-button-wrap" label="Submit" /> -->
+          <p-button
+            type="submit"
+            label="Submit"
+            [disabled]="loginUserForm.form.invalid"
+          />
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

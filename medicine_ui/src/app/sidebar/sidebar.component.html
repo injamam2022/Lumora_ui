@@ -1,0 +1,43 @@
+<div class="sidebar {{ fetchSidebarClass }}">
+  <div class="logo">
+    <img src="images/logo.jpg" />
+  </div>
+
+  <div class="menu-list">
+    <p-panelMenu [model]="items">
+      <ng-template pTemplate="item" let-item>
+        <ng-container *ngIf="item.controller_name">
+          <a
+            [href]="item.controller_name + '/' + item.module_id"
+            class="flex align-items-center cursor-pointer text-color px-3 py-2"
+          >
+            <span [class]="item.icon"></span>
+            <span class="ml-2 text-color">{{ item.module_name }}</span>
+          </a>
+        </ng-container>
+        <!-- <ng-template #urlRef>
+          <a
+            *ngIf="item.controller_name; else noLink"
+            [href]="item.controller_name"
+            class="flex align-items-center cursor-pointer text-color px-3 py-2"
+          >
+            <span [class]="item.fav_icon"></span>
+            <span class="ml-2">{{ item.module_name }}</span>
+          </a>
+          <ng-template #noLink>
+            <span
+              class="flex align-items-center cursor-pointer text-color px-3 py-2"
+            >
+              <span [class]="item.fav_icon"></span>
+              <span class="ml-2">{{ item.module_name }}</span>
+              <i
+                *ngIf="item.items"
+                class="pi pi-angle-down text-primary ml-auto"
+              ></i>
+            </span>
+          </ng-template>
+        </ng-template> -->
+      </ng-template>
+    </p-panelMenu>
+  </div>
+</div>

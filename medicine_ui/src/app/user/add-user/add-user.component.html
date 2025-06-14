@@ -1,0 +1,104 @@
+<div class="add-userwrapper">
+  <form #userCreationForm="ngForm" (ngSubmit)="addCreationUser()">
+    <div class="formgroup">
+      <p>Choose Department</p>
+      <p-dropdown
+        *ngIf="allDepartmentData"
+        [options]="allDepartmentData.all_list"
+        [(ngModel)]="addUserPayload.department_id"
+        (onChange)="getTheRoleId()"
+        name="departmentId"
+        optionValue="department_id"
+        optionLabel="department_name"
+        placeholder="Select Department"
+        required=""
+      />
+    </div>
+
+    <div class="formgroup" *ngIf="allRoleData">
+      <p>Choose Role</p>
+      <p-dropdown
+        [options]="allRoleData.all_list"
+        [(ngModel)]="addUserPayload.role_id"
+        name="roleId"
+        optionValue="role_id"
+        optionLabel="role_name"
+        placeholder="Select Role"
+        required=""
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Name</p>
+      <input
+        type="text"
+        pInputText
+        name="firstName"
+        [(ngModel)]="addUserPayload.admin_name"
+        placeholder="Enter  Name"
+        required
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Email</p>
+      <input
+        type="text"
+        pInputText
+        name="email"
+        [(ngModel)]="addUserPayload.email_id"
+        placeholder="Enter Email Id"
+        required
+      />
+    </div>
+    <!-- <div class="formgroup">
+      <p>Dropdown</p>
+      <p-dropdown
+        [options]="cities"
+        [(ngModel)]="selectedCity"
+        optionLabel="name"
+        placeholder="Select a City"
+      />
+    </div> -->
+    <!-- <div class="formgroup">
+      <p>Date picker</p>
+      <p-calendar
+        [(ngModel)]="date2"
+        [iconDisplay]="'input'"
+        [showIcon]="true"
+        inputId="icondisplay"
+      />
+    </div> -->
+    <div class="formgroup">
+      <p>Enter Password</p>
+      <p-password
+        [(ngModel)]="addUserPayload.password"
+        [feedback]="false"
+        name="password"
+        required
+      />
+    </div>
+
+    <div class="formgroup">
+      <p>Enter Confirm Password</p>
+      <p-password
+        [(ngModel)]="addUserPayload.confirmPassword"
+        [feedback]="false"
+        name="confirmPassword"
+        required
+      />
+    </div>
+    <!-- <div class="formgroup">
+      <p>Text area</p>
+      <textarea rows="5" cols="30" pInputTextarea> </textarea>
+    </div> -->
+    <div class="buttonwrap">
+      <!-- <p-button class="submit-button-wrap" label="Submit" /> -->
+      <p-button
+        type="submit"
+        label="Submit"
+        [disabled]="userCreationForm.form.invalid"
+      />
+    </div>
+  </form>
+</div>

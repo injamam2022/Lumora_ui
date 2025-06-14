@@ -1,0 +1,101 @@
+<div class="side-modal">
+  <div class="modal-wrap-body">
+    <div class="modal-body">
+      <div class="form-wrap">
+        <label for="labelInput">Label</label>
+        <input
+          id="labelInput"
+          pInputText
+          class="p-inputtext p-component"
+          [(ngModel)]="formCreation.parameter_name"
+          placeholder="Write here"
+        />
+      </div>
+
+      <div class="form-wrap">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          pInputTextarea
+          class="p-inputtextarea p-component"
+          placeholder="Write here"
+          [(ngModel)]="formCreation.parameter_description"
+        ></textarea>
+      </div>
+
+      <div class="form-wrap">
+        <label for="parameterType">Parameter Type</label>
+        <p-dropdown
+          id="parameterType"
+          optionLabel="parameter_type_name"
+          optionValue="parameter_type_id"
+          [options]="parameterTypes.all_list"
+          [(ngModel)]="formCreation.parameter_type_id"
+          placeholder="Select a type"
+          (onChange)="handleParameterTypeChange()"
+        ></p-dropdown>
+      </div>
+
+      <!-- MultiSelect Options -->
+      <div class="form-wrap" *ngIf="formCreation.parameter_type_id === '5'">
+        <label>MultiSelect Options</label>
+
+        <div
+          *ngFor="
+            let option of multiSelectOptions;
+            let i = index;
+            trackBy: trackByIndex
+          "
+          class="multi-option-wrap"
+        >
+          <input
+            type="text"
+            [(ngModel)]="multiSelectOptions[i]"
+            placeholder="Option Name"
+            class="p-inputtext p-component"
+          />
+          <button
+            pButton
+            type="button"
+            class="p-button-danger p-button-text"
+            (click)="removeMultiSelectOption(i)"
+          >
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+
+        <div class="add-option-btn">
+          <button
+            pButton
+            type="button"
+            class="p-button-secondary"
+            (click)="addMultiSelectOption()"
+          >
+            + Add Option
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="footer-button">
+          <button
+            pButton
+            type="button"
+            class="p-button-text"
+            (click)="ref.close()"
+          >
+            Cancel
+          </button>
+          <button
+            pButton
+            type="button"
+            class="p-button p-button-primary"
+            (click)="saveParameterFields()"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
