@@ -3,30 +3,33 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { CardModule } from 'primeng/card';
 import { ProcessExecutionService } from '../shared/services/process-execution.service';
-import { ProcessListData } from '../manage-process/interface/manage-process-interface';
-import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
 import {
   BranchingRules,
   BranchingRulesPayloadCreation,
   BranchingActionType,
   BranchingConditionOperator,
 } from './interface/branching-rule.interface';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import {
   FetchParameterOptions,
   ParametersListDataResToTask,
   ProcessCreation,
   SingleStageTaskLIST,
-  ParameterTypeAllList,
 } from '../stage-creation/interface/process-creation.interface';
 import { FormsModule } from '@angular/forms';
 import { ToasterService } from '../shared/services/toaster.service';
 import { InputTextModule } from 'primeng/inputtext';
 
-interface SelectedOption {
-  name: string;
-  code: string;
+interface RuleBlock extends BranchingRulesPayloadCreation {
+  stage_name?: string;
+  task_name?: string;
+  parameter_name?: string;
+  target_parameter_name?: string;
+  display_message_content?: string;
+  parameterOptions?: string[];
+  parameterType?: string;
 }
 
 @Component({
@@ -46,13 +49,17 @@ interface SelectedOption {
   styleUrl: './branching-rules.component.scss',
 })
 export class BranchingRulesComponent {
-  selectedOptions: SelectedOption[] | undefined;
   public BranchingActionType = BranchingActionType;
   public BranchingConditionOperator = BranchingConditionOperator;
 
-  public getAllBranchingRulesData!: BranchingRules;
-
   @Input() public processId = '';
+
+  public parameterOptionList: FetchParameterOptions = {
+    stat: 0,
+    msg: '',
+    list_count: 0,
+    all_list: [],
+  };
 
   public processCreationData: ProcessCreation = {
     data: {
@@ -64,29 +71,29 @@ export class BranchingRulesComponent {
     },
   };
 
-  public branchingRulesCreation: BranchingRulesPayloadCreation = {
-    process_id: '',
-    stage_id: '',
-    task_id: '',
-    parameter_id: '',
-    parameter_value: '',
-    operator: BranchingConditionOperator.EQUAL,
-    target_parameter_id: undefined,
-    action_type: BranchingActionType.HIDE_PARAMETER,
-    display_message_content: undefined,
-    validation_min_value: undefined,
-    validation_max_value: undefined,
-    validation_regex_pattern: undefined,
-    validation_message_for_rule: undefined,
-  };
+  public getAllBranchingRulesData!: BranchingRules;
 
   public stageWiseTaskList!: SingleStageTaskLIST;
-
-  public parameterOptionList: FetchParameterOptions = { stat: 0, msg: '', list_count: 0, all_list: [] };
-
+  
   public taskWiseParameterList!: ParametersListDataResToTask;
-
+ 
   public selectedParameterType: string | undefined;
+
+  public ruleBlocks: RuleBlock[] = [];
+
+  public operatorOptions = [
+    { label: 'Equal To', value: BranchingConditionOperator.EQUAL },
+    { label: 'Greater Than', value: BranchingConditionOperator.GREATER_THAN },
+    { label: 'Less Than', value: BranchingConditionOperator.LESS_THAN },
+  ];
+
+  public actionTypeOptions = [
+    { label: 'Hide Parameter', value: BranchingActionType.HIDE_PARAMETER },
+    {
+      label: 'Display Error Message',
+      value: BranchingActionType.DISPLAY_MESSAGE,
+    },
+  ];
 
   constructor(
     public processExecutionService: ProcessExecutionService,
@@ -94,20 +101,17 @@ export class BranchingRulesComponent {
   ) {}
 
   ngOnInit() {
-    this.selectedOptions = [
-      { name: 'Yes', code: 'Yes' },
-      { name: 'No', code: 'No' },
-    ];
+    this.loadInitialData();
+    this.addRuleBlock();
+  }
 
-    //fetch all branching rules for a process
+  loadInitialData() {
     this.processExecutionService
       .getAllProcessBranchingRules(this.processId)
       .subscribe((response) => {
         this.getAllBranchingRulesData = response;
-        console.log('rules', this.getAllBranchingRulesData);
       });
 
-    //fetch all stages for a process
     this.processExecutionService
       .getSingleProcessExecution(this.processId)
       .subscribe((response) => {
@@ -115,8 +119,30 @@ export class BranchingRulesComponent {
       });
   }
 
-  fetchTaskRespectToStages(stageId: any) {
-    console.log(stageId);
+  addRuleBlock() {
+    this.ruleBlocks.push({
+      process_id: this.processId,
+      stage_id: '',
+      task_id: '',
+      parameter_id: '',
+      parameter_value: '',
+      operator: BranchingConditionOperator.EQUAL,
+      action_type: BranchingActionType.HIDE_PARAMETER,
+    });
+  }
+
+  deleteRuleBlock(index: number) {
+    this.ruleBlocks.splice(index, 1);
+  }
+
+  onStageChange(stageId: string, index: number) {
+    const rule = this.ruleBlocks[index];
+    rule.stage_id = stageId;
+    rule.task_id = '';
+    rule.parameter_id = '';
+    rule.parameter_value = '';
+    rule.target_parameter_id = undefined;
+
     this.processExecutionService
       .getTaskInfoRestoStage(stageId)
       .subscribe((response) => {
@@ -124,7 +150,12 @@ export class BranchingRulesComponent {
       });
   }
 
-  fetchParameterRespectToTask(taskId: any) {
+  onTaskChange(taskId: string, index: number) {
+    const rule = this.ruleBlocks[index];
+    rule.task_id = taskId;
+    rule.parameter_id = '';
+    rule.parameter_value = '';
+
     this.processExecutionService
       .getParametersInfoRestoTask(taskId)
       .subscribe((response) => {
@@ -132,55 +163,61 @@ export class BranchingRulesComponent {
       });
   }
 
-  fetchParameterOptionsToParameter(parameterId: any) {
-    this.selectedParameterType = undefined;
-
-    const selectedParam = this.taskWiseParameterList.data.find(param => param.parameter_id === parameterId);
-    if (selectedParam) {
-      this.selectedParameterType = selectedParam.parameter_type_id;
-    }
+  onParameterChange(parameterId: string, index: number) {
+    const rule = this.ruleBlocks[index];
+    const selectedParam = this.taskWiseParameterList?.data?.find(
+      (param) => param.parameter_id === parameterId
+    );
+    rule.parameter_id = parameterId;
+    rule.parameter_value = '';
+    rule.parameterType = selectedParam?.parameter_type_id;
 
     this.processExecutionService
       .getParametersOptionsRespectToTask(parameterId)
       .subscribe((response: any) => {
         this.parameterOptionList = response;
+        rule.parameterOptions = response?.all_list || [];
       });
   }
 
-  addNewRules() {
-    this.branchingRulesCreation.process_id = this.processId;
-    this.processExecutionService
-      .createBranchingRules(this.branchingRulesCreation)
-      .subscribe((response: any) => {
-        if (response.stat === 200) {
-          this.toasterService.successToast('Rules Created Successfully');
-          if (this.branchingRulesCreation.action_type === BranchingActionType.DISPLAY_MESSAGE) {
-            this.branchingRulesCreation.display_message_content = undefined;
-          } else if (this.branchingRulesCreation.action_type === BranchingActionType.APPLY_VALIDATION) {
-            this.branchingRulesCreation.validation_min_value = undefined;
-            this.branchingRulesCreation.validation_max_value = undefined;
-            this.branchingRulesCreation.validation_regex_pattern = undefined;
-            this.branchingRulesCreation.validation_message_for_rule = undefined;
-          }
-          this.processExecutionService
-            .getAllProcessBranchingRules(this.processId)
-            .subscribe((response) => {
-              this.getAllBranchingRulesData = response;
-              console.log('rules', this.getAllBranchingRulesData);
-            });
-        }
-      });
+  onActionTypeChange(selectedType: string, index: number) {
+    const rule = this.ruleBlocks[index];
+    rule.action_type = selectedType as BranchingActionType;
+    rule.target_parameter_id = undefined;
+    rule.display_message_content = undefined;
+    rule.validation_min_value = undefined;
+    rule.validation_max_value = undefined;
+    rule.validation_regex_pattern = undefined;
+    rule.validation_message_for_rule = undefined;
   }
 
-  public showSingleBranchingRules() {}
+  submitAllRules() {
+    const validRules = this.ruleBlocks.filter(
+      (rule) =>
+        rule.stage_id &&
+        rule.task_id &&
+        rule.parameter_id &&
+        rule.parameter_value &&
+        rule.operator &&
+        rule.action_type
+    );
 
-  onActionTypeChange(selectedType: string) {
-    this.branchingRulesCreation.action_type = selectedType as BranchingActionType;
-    this.branchingRulesCreation.target_parameter_id = undefined;
-    this.branchingRulesCreation.display_message_content = undefined;
-    this.branchingRulesCreation.validation_min_value = undefined;
-    this.branchingRulesCreation.validation_max_value = undefined;
-    this.branchingRulesCreation.validation_regex_pattern = undefined;
-    this.branchingRulesCreation.validation_message_for_rule = undefined;
+    if (validRules.length === 0) {
+      this.toasterService.errorToast(
+        'Please fill in all rule details correctly.'
+      );
+      return;
+    }
+
+    const requests = validRules.map((rule) =>
+      this.processExecutionService.createBranchingRules({ ...rule })
+    );
+
+    Promise.all(requests.map((r) => r.toPromise())).then(() => {
+      this.toasterService.successToast('All rules saved successfully.');
+      this.ruleBlocks = [];
+      this.addRuleBlock();
+      this.loadInitialData();
+    });
   }
 }

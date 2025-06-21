@@ -441,3 +441,69 @@
   font-style: italic;
   color: #999;
 }
+
+.rule-block {
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    p-dropdown,
+    input[pInputText] {
+      width: 100%;
+    }
+  }
+
+  .delete-btn {
+    margin-top: 10px;
+    background: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  hr {
+    margin-top: 20px;
+  }
+}
+
+.button-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+
+  .add-btn,
+  .submit-btn {
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #d9d9d9;
+  }
+
+  .add-btn {
+    background-color: #fafafa;
+  }
+
+  .submit-btn {
+    background-color: #1890ff;
+    color: white;
+    border-color: #1890ff;
+  }
+}

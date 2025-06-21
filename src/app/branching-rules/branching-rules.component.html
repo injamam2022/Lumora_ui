@@ -3,15 +3,13 @@
 
 <section class="user-main-content">
   <div class="task-container">
-    <!-- <h1 style="text-align: center">Branching Rules</h1> -->
     <div class="task-row">
       <div class="task-all-wrap">
         <div class="form-card-wrap">
-          <!-- <div class="form-card"> -->
-
+          <!-- Already Added Rules Section -->
           <div
+            *ngIf="getAllBranchingRulesData && getAllBranchingRulesData.data.length > 0"
             class="already-added-rules"
-            *ngIf="getAllBranchingRulesData.data.length > 0"
           >
             <h4 class="rules-title">Already Added Rules</h4>
             <div class="rules-list">
@@ -26,9 +24,7 @@
                   }}</span>
                   <span class="arrow">➔</span>
                   <span class="action-text">Value </span>
-                  <span class="parameter-value">{{
-                    rulesBreak.operator
-                  }}</span>
+                  <span class="parameter-value">{{ rulesBreak.operator }}</span>
                   <span class="action-text"> : </span>
                   <span class="parameter-value">{{
                     rulesBreak.parameter_value
@@ -37,25 +33,64 @@
                 <div class="rule-body">
                   <span class="action-text">Action:</span>
                   <span class="action-detail">
-                    <ng-container *ngIf="rulesBreak.action_type === BranchingActionType.HIDE_PARAMETER">
+                    <ng-container
+                      *ngIf="
+                        rulesBreak.action_type ===
+                        BranchingActionType['HIDE_PARAMETER']
+                      "
+                    >
                       <span class="action-text">Hide Parameter ➔ </span>
                       <span class="parameter-value">{{
                         rulesBreak.target_parameter_name
                       }}</span>
                     </ng-container>
-                    <ng-container *ngIf="rulesBreak.action_type === BranchingActionType.DISPLAY_MESSAGE">
+                    <ng-container
+                      *ngIf="
+                        rulesBreak.action_type ===
+                        BranchingActionType['DISPLAY_MESSAGE']
+                      "
+                    >
                       <span class="action-text">Display Message ➔ </span>
                       <span class="parameter-value">{{
                         rulesBreak.display_message_content
                       }}</span>
                     </ng-container>
-                    <ng-container *ngIf="rulesBreak.action_type === BranchingActionType.APPLY_VALIDATION">
+                    <ng-container
+                      *ngIf="
+                        rulesBreak.action_type ===
+                        BranchingActionType['APPLY_VALIDATION']
+                      "
+                    >
                       <span class="action-text">Apply Validation: </span>
                       <ul class="validation-rules-list">
-                        <li *ngIf="rulesBreak.validation_min_value !== undefined">Min Value: <span class="parameter-value">{{rulesBreak.validation_min_value}}</span></li>
-                        <li *ngIf="rulesBreak.validation_max_value !== undefined">Max Value: <span class="parameter-value">{{rulesBreak.validation_max_value}}</span></li>
-                        <li *ngIf="rulesBreak.validation_regex_pattern">Regex: <span class="parameter-value">{{rulesBreak.validation_regex_pattern}}</span></li>
-                        <li *ngIf="rulesBreak.validation_message_for_rule">Message: <span class="parameter-value">{{rulesBreak.validation_message_for_rule}}</span></li>
+                        <li
+                          *ngIf="rulesBreak.validation_min_value !== undefined"
+                        >
+                          Min Value:
+                          <span class="parameter-value">{{
+                            rulesBreak.validation_min_value
+                          }}</span>
+                        </li>
+                        <li
+                          *ngIf="rulesBreak.validation_max_value !== undefined"
+                        >
+                          Max Value:
+                          <span class="parameter-value">{{
+                            rulesBreak.validation_max_value
+                          }}</span>
+                        </li>
+                        <li *ngIf="rulesBreak.validation_regex_pattern">
+                          Regex:
+                          <span class="parameter-value">{{
+                            rulesBreak.validation_regex_pattern
+                          }}</span>
+                        </li>
+                        <li *ngIf="rulesBreak.validation_message_for_rule">
+                          Message:
+                          <span class="parameter-value">{{
+                            rulesBreak.validation_message_for_rule
+                          }}</span>
+                        </li>
                       </ul>
                     </ng-container>
                   </span>
@@ -71,164 +106,151 @@
             <p>No branching rules added yet.</p>
           </div>
 
-          <div class="heading">
-            <h4>Set New Rules</h4>
-            <div class="action"></div>
-          </div>
-
-          <h3>Select Stage</h3>
-          <p-dropdown
-            [options]="processCreationData.data.stages"
-            class="select-drop"
-            defaultLabel="Select "
-            placeholder="Select "
-            optionLabel="stage_name"
-            [(ngModel)]="branchingRulesCreation.stage_id"
-            optionValue="stage_id"
-            (onChange)="fetchTaskRespectToStages($event.value)"
-          >
-          </p-dropdown>
-
-          <h3 *ngIf="stageWiseTaskList">Select Task</h3>
-          <p-dropdown
-            *ngIf="stageWiseTaskList"
-            [options]="stageWiseTaskList.data"
-            class="select-drop"
-            defaultLabel="Select "
-            placeholder="Select "
-            optionLabel="task_name"
-            optionValue="task_id"
-            [(ngModel)]="branchingRulesCreation.task_id"
-            (onChange)="fetchParameterRespectToTask($event.value)"
-          >
-          </p-dropdown>
-
-          <h3 *ngIf="taskWiseParameterList">Select Parameter</h3>
-          <p-dropdown
-            *ngIf="taskWiseParameterList"
-            [options]="taskWiseParameterList.data"
-            class="select-drop"
-            defaultLabel="Select "
-            placeholder="Select "
-            optionLabel="parameter_name"
-            optionValue="parameter_id"
-            [(ngModel)]="branchingRulesCreation.parameter_id"
-            (onChange)="fetchParameterOptionsToParameter($event.value)"
-          >
-          </p-dropdown>
-
-          <h3 *ngIf="parameterOptionList">If Value Of the Selected (Equal To)</h3>
-          <ng-container *ngIf="parameterOptionList!.all_list!.length > 0; else textInput">
-            <p-dropdown
-              [options]="parameterOptionList.all_list"
-              class="select-drop"
-              defaultLabel="Select "
-              placeholder="Select "
-              optionLabel="options_for_parameter"
-              optionValue="options_for_parameter"
-              [(ngModel)]="branchingRulesCreation.parameter_value"
+          <!-- Create New Rule Section -->
+          <form (ngSubmit)="submitAllRules()" #rulesForm="ngForm">
+            <div
+              *ngFor="let rule of ruleBlocks; let i = index"
+              class="rule-block"
             >
-            </p-dropdown>
-          </ng-container>
-          <ng-template #textInput>
-            <input type="text" pInputText class="p-inputtext p-component p-element select-drop" [(ngModel)]="branchingRulesCreation.parameter_value" placeholder="Enter value here" />
-          </ng-template>
+              <h3>Set New Rule #{{ i + 1 }}</h3>
 
-          <h3>Select Operator</h3>
-          <p-dropdown
-            [options]="[
-              { label: 'Equal To', value: BranchingConditionOperator.EQUAL },
-              { label: 'Greater Than', value: BranchingConditionOperator.GREATER_THAN },
-              { label: 'Less Than', value: BranchingConditionOperator.LESS_THAN }
-            ]"
-            class="select-drop"
-            defaultLabel="Select "
-            placeholder="Select "
-            optionLabel="label"
-            optionValue="value"
-            [(ngModel)]="branchingRulesCreation.operator"
-          >
-          </p-dropdown>
+              <div class="form-group">
+                <label>Select Stage</label>
+                <p-dropdown
+                  [options]="processCreationData.data.stages"
+                  [(ngModel)]="rule.stage_id"
+                  (onChange)="onStageChange($event.value, i)"
+                  optionLabel="stage_name"
+                  optionValue="stage_id"
+                  placeholder="Select Stage"
+                  name="stage_{{ i }}"
+                ></p-dropdown>
+              </div>
 
-          <h3>Select Action Type</h3>
-          <p-dropdown
-            [options]="[
-              { label: 'Hide Parameter', value: BranchingActionType.HIDE_PARAMETER },
-              { label: 'Display Message', value: BranchingActionType.DISPLAY_MESSAGE },
-              { label: 'Apply Validation', value: BranchingActionType.APPLY_VALIDATION }
-            ]"
-            class="select-drop"
-            defaultLabel="Select "
-            placeholder="Select "
-            optionLabel="label"
-            optionValue="value"
-            [(ngModel)]="branchingRulesCreation.action_type"
-            (onChange)="onActionTypeChange($event.value)"
-          >
-          </p-dropdown>
+              <div class="form-group">
+                <label>Select Task</label>
+                <p-dropdown
+                  *ngIf="stageWiseTaskList"
+                  [options]="stageWiseTaskList.data"
+                  [(ngModel)]="rule.task_id"
+                  (onChange)="onTaskChange($event.value, i)"
+                  optionLabel="task_name"
+                  optionValue="task_id"
+                  placeholder="Select Task"
+                  name="task_{{ i }}"
+                ></p-dropdown>
+              </div>
 
-          <ng-container *ngIf="branchingRulesCreation.action_type === BranchingActionType.HIDE_PARAMETER">
-            <h3>Then Hide This Parameter</h3>
-            <p-dropdown
-              *ngIf="taskWiseParameterList"
-              [options]="taskWiseParameterList.data"
-              class="select-drop"
-              defaultLabel="Select "
-              placeholder="Select "
-              optionLabel="parameter_name"
-              optionValue="parameter_id"
-              [(ngModel)]="branchingRulesCreation.target_parameter_id"
-            >
-            </p-dropdown>
-          </ng-container>
+              <div class="form-group">
+                <label>Select Parameter</label>
+                <p-dropdown
+                  *ngIf="taskWiseParameterList"
+                  [options]="taskWiseParameterList.data"
+                  [(ngModel)]="rule.parameter_id"
+                  (onChange)="onParameterChange($event.value, i)"
+                  optionLabel="parameter_name"
+                  optionValue="parameter_id"
+                  placeholder="Select Parameter"
+                  name="parameter_{{ i }}"
+                ></p-dropdown>
+              </div>
 
-          <ng-container *ngIf="branchingRulesCreation.action_type === BranchingActionType.DISPLAY_MESSAGE">
-            <h3>Message to Display</h3>
-            <input type="text" pInputText class="p-inputtext p-component p-element select-drop" [(ngModel)]="branchingRulesCreation.display_message_content" placeholder="Enter message here" />
-          </ng-container>
+              <div *ngIf="rule.parameter_id" class="form-group">
+                <label>If Value of the Selected Parameter</label>
+                <p-dropdown
+                  *ngIf="parameterOptionList!.all_list!.length > 0; else textInput"
+                  [options]="parameterOptionList!.all_list!"
+                  [(ngModel)]="rule.parameter_value"
+                  optionLabel="options_for_parameter"
+                  optionValue="options_for_parameter"
+                  placeholder="Select Value"
+                  name="value_{{ i }}"
+                ></p-dropdown>
+                <ng-template #textInput>
+                  <input
+                    type="text"
+                    pInputText
+                    [(ngModel)]="rule.parameter_value"
+                    name="value_{{ i }}"
+                    placeholder="Enter Value"
+                  />
+                </ng-template>
+              </div>
 
-          <ng-container *ngIf="branchingRulesCreation.action_type === BranchingActionType.APPLY_VALIDATION">
-            <h3>Validation Rules</h3>
-            <div class="formgroup">
-              <p>Min Value</p>
-              <input type="number" pInputText class="p-inputtext p-component p-element select-drop" [(ngModel)]="branchingRulesCreation.validation_min_value" placeholder="Enter min value" [disabled]="selectedParameterType !== '4'" />
+              <div class="form-group">
+                <label>Select Operator</label>
+                <p-dropdown
+                  [options]="operatorOptions"
+                  [(ngModel)]="rule.operator"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select Operator"
+                  name="operator_{{ i }}"
+                ></p-dropdown>
+              </div>
+
+              <div class="form-group">
+                <label>Select Action Type</label>
+                <p-dropdown
+                  [options]="actionTypeOptions"
+                  [(ngModel)]="rule.action_type"
+                  (onChange)="onActionTypeChange($event.value, i)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select Action"
+                  name="actionType_{{ i }}"
+                ></p-dropdown>
+              </div>
+
+              <div
+                *ngIf="rule.action_type === BranchingActionType.DISPLAY_MESSAGE"
+                class="form-group"
+              >
+                <label>Message to Display</label>
+                <input
+                  type="text"
+                  pInputText
+                  [(ngModel)]="rule.display_message_content"
+                  name="message_{{ i }}"
+                  placeholder="Enter message here"
+                />
+              </div>
+
+              <div
+                *ngIf="rule.action_type === BranchingActionType.HIDE_PARAMETER && taskWiseParameterList"
+                class="form-group"
+              >
+                <label>Target Parameter to Hide</label>
+                <p-dropdown
+                  [options]="taskWiseParameterList.data"
+                  [(ngModel)]="rule.target_parameter_id"
+                  optionLabel="parameter_name"
+                  optionValue="parameter_id"
+                  placeholder="Select Target Parameter"
+                  name="targetParam_{{ i }}"
+                ></p-dropdown>
+              </div>
+
+              <button
+                *ngIf="i > 0"
+                type="button"
+                class="delete-btn"
+                (click)="deleteRuleBlock(i)"
+              >
+                Delete Rule
+              </button>
+              <hr />
             </div>
-            <div class="formgroup">
-              <p>Max Value</p>
-              <input type="number" pInputText class="p-inputtext p-component p-element select-drop" [(ngModel)]="branchingRulesCreation.validation_max_value" placeholder="Enter max value" [disabled]="selectedParameterType !== '4'" />
-            </div>
-            <div class="formgroup">
-              <p>Regex Pattern</p>
-              <input type="text" pInputText class="p-inputtext p-component p-element select-drop" [(ngModel)]="branchingRulesCreation.validation_regex_pattern" placeholder="Enter regex pattern" />
-            </div>
-            <div class="formgroup">
-              <p>Validation Message For Rule</p>
-              <input type="text" pInputText class="p-inputtext p-component p-element select-drop" [(ngModel)]="branchingRulesCreation.validation_message_for_rule" placeholder="Enter validation message" />
-            </div>
-          </ng-container>
 
-          <div class="button-wrap">
-            <!-- ✅ Pass both stage index (i) and task index (j) -->
-            <!-- <button class="add-new-parameters" (click)="addParameters(i, j)">
-                <i class="pi pi-plus-circle"></i> Add parameters
-              </button> -->
-          </div>
-          <!-- </div> -->
-          <div class="button-wrapper">
-            <!-- <button class="add-new-task" (click)="addNewTask(i)">
-              <i class="pi pi-plus-circle"></i> Add New Task
-            </button> -->
-          </div>
+            <div class="button-wrapper">
+              <button type="button" class="add-btn" (click)="addRuleBlock()">
+                <i class="pi pi-plus-circle"></i> Add Another Rule
+              </button>
+              <button type="submit" class="submit-btn">Submit All Rules</button>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
-    <div class="button-wrapper">
-      <!-- <button class="add-new-stage">
-        <i class="pi pi-plus-circle"></i> Add New Stage
-      </button> -->
-      <button class="add-new-task" (click)="addNewRules()">
-        <i class="pi pi-plus-circle"></i> Add Rules
-      </button>
     </div>
   </div>
 </section>
