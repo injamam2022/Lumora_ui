@@ -1,0 +1,68 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+
+<section class="user-main-content">
+  <h2 class="cluster-title">CLUSTER HEAD</h2>
+
+  <div class="cluster-controls">
+    <button class="back-btn">← Back</button>
+
+    <div class="filters">
+      <div class="filter-item">
+        <label for="category">CATEGORY</label>
+        <select id="category">
+          <option>All</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="plant">PLANT</label>
+        <select id="plant">
+          <option>Plant 1</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="trend-legend">
+      <strong>TREND OVER LAST 3 MONTHS</strong>
+      <div class="legend-row">
+        <span><span class="legend-icon up">↑</span> Improvement</span>
+        <span><span class="legend-icon down">↓</span> Decline</span>
+        <span><span class="legend-icon no-change">→</span> No Change</span>
+      </div>
+      <div class="checkboxes">
+        <div><span class="budget-legend">xx</span> BUDGET</div>
+        <label>
+          <input type="checkbox" />
+          UPDATED MONTHLY
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">PRODUCTIVITY</h3>
+
+  <div class="metric-cards">
+    <div class="metric-card" *ngFor="let card of metricData">
+      <div class="metric-header">
+        <span>{{ card.title }}</span>
+        <span class="trend-arrow" [ngClass]="card.trend">{{ card.arrow }}</span>
+      </div>
+
+      <div class="budget-values">
+        <span *ngFor="let b of card.budget">{{ b }}</span>
+      </div>
+
+      <div class="bar-values">
+        <div *ngFor="let v of card.actual" class="bar">
+          <div class="bar-label">{{ v }}</div>
+        </div>
+      </div>
+
+      <div class="bar-labels">
+        <span>MTD</span>
+        <span>Last 3M</span>
+        <span>YTD</span>
+      </div>
+    </div>
+  </div>
+</section>

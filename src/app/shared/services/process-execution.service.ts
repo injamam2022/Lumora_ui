@@ -244,4 +244,21 @@ export class ProcessExecutionService {
       elogParametersPayload
     );
   }
+
+  public createBranchingRulesBulk(rules: any[]) {
+    // Remove parameterOptions from each rule before sending
+    //const cleanedRules = rules.map(({ parameterOptions, ...rest }) => rest);
+    return this.baseHttpService.post<any>(
+      'General/AddBranchingRules',
+       rules 
+    );
+  }
+
+  deleteBranchingRules(branchingRulesId: string) {
+    const payload = { branching_rules: { branching_rules_id: branchingRulesId } };
+    return this.baseHttpService.post<any>(
+      'General/Delete',
+      payload
+    );
+  }
 }

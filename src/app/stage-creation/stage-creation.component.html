@@ -271,11 +271,11 @@
     </div>
   </div>
 
-  <div class="branching-messages-display">
+  <!-- <div class="branching-messages-display">
     <div *ngFor="let message of activeBranchingMessages | keyvalue" class="branching-message-card">
       <p>{{ message.value }}</p>
     </div>
-  </div>
+  </div> -->
 
   <div class="branching-role" *ngIf="activeTab === 'BranchingRules'">
     <app-branching-rules [processId]="processId"></app-branching-rules>

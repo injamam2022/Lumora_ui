@@ -74,7 +74,7 @@ export class BranchingRulesComponent {
   public getAllBranchingRulesData!: BranchingRules;
 
   public stageWiseTaskList!: SingleStageTaskLIST;
-  
+
   public taskWiseParameterList!: ParametersListDataResToTask;
  
   public selectedParameterType: string | undefined;
@@ -94,6 +94,8 @@ export class BranchingRulesComponent {
       value: BranchingActionType.DISPLAY_MESSAGE,
     },
   ];
+
+  public activeTab: 'addRule' | 'viewRules' = 'addRule';
 
   constructor(
     public processExecutionService: ProcessExecutionService,
@@ -209,14 +211,21 @@ export class BranchingRulesComponent {
       return;
     }
 
-    const requests = validRules.map((rule) =>
-      this.processExecutionService.createBranchingRules({ ...rule })
-    );
+    console.log(validRules);
 
-    Promise.all(requests.map((r) => r.toPromise())).then(() => {
+    //const payload = validRules.map(({ parameterOptions, ...rest }) => rest);
+
+    this.processExecutionService.createBranchingRulesBulk(validRules).toPromise().then(() => {
       this.toasterService.successToast('All rules saved successfully.');
       this.ruleBlocks = [];
       this.addRuleBlock();
+      this.loadInitialData();
+    });
+  }
+
+  deleteRule(branchingRulesId: string) {
+    this.processExecutionService.deleteBranchingRules(branchingRulesId).toPromise().then(() => {
+      this.toasterService.successToast('Rule deleted successfully.');
       this.loadInitialData();
     });
   }

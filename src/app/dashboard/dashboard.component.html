@@ -1,3 +1,21 @@
 <app-sidebar></app-sidebar>
 <app-header></app-header>
-<p>dashboard works!</p>
+
+<section class="user-main-content">
+  <div class="dashboard-cards">
+    <div class="dashboard-card" [routerLink]="['/coo-dashboard']">
+      <h3 class="card-title">COO Dashboard</h3>
+      <p class="card-desc">View productivity, utilization, and trends at a glance.</p>
+    </div>
+
+    <div class="dashboard-card" [routerLink]="['/cluster-head']">
+      <h3 class="card-title">Cluster Head</h3>
+      <p class="card-desc">View productivity, utilization, and trends at a glance.</p>
+    </div>
+
+    <div class="dashboard-card" [routerLink]="['/operator-dashboard']">
+        <h3 class="card-title">Operator Dashboard</h3>
+        <p class="card-desc">View productivity, utilization, and trends at a glance.</p>
+      </div>
+  </div>
+</section>

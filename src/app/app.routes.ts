@@ -21,6 +21,9 @@ import { ProcessCreationComponent } from './process-creation/process-creation.co
 import { ElogbookComponent } from './elogbook/elogbook.component';
 import { ElogbookFormBuilderComponent } from './elogbook/elogbook-form-builder.component';
 import { OperationalControlTowerComponent } from './operational-control-tower/operational-control-tower.component';
+import { CooDashboardComponent } from './coo-dashboard/coo-dashboard.component';
+import { ClusterHeadComponent } from './cluster-head/cluster-head.component';
+import { OperatorDashboardComponent } from './operator-dashboard/operator-dashboard.component';
 export const routes: Routes = [
   { path: '', component: LoginComponent },
   {
@@ -159,6 +162,21 @@ export const routes: Routes = [
   {
     path: 'manage-process/:manageProcessModuleId',
     component: ManageProcessComponent,
+    canActivate: [],
+  },
+  {
+    path: 'coo-dashboard',
+    component: CooDashboardComponent,
+    canActivate: [],
+  },
+  {
+    path: 'cluster-head',
+    component: ClusterHeadComponent,
+    canActivate: [],
+  },
+  {
+    path: 'operator-dashboard',
+    component: OperatorDashboardComponent,
     canActivate: [],
   },
 ];

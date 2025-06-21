@@ -1,0 +1,134 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+
+<section class="user-main-content">
+  <h2 class="dashboard-title">COO DASHBOARD</h2>
+
+  <div class="dashboard-header">
+    <div class="filters">
+      <div class="filter-item">
+        <label for="category">CATEGORY</label>
+        <select id="category">
+          <option>All</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="site">SITE</label>
+        <select id="site">
+          <option>Overall</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="technology">TECHNOLOGY</label>
+        <select id="technology">
+          <option>OSD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="trend-legend">
+      <strong>TREND OVER LAST 3 MONTHS</strong>
+      <div class="legend-row">
+        <span><span class="legend-icon up">↑</span> Improvement</span>
+        <span><span class="legend-icon down">↓</span> Decline</span>
+        <span><span class="legend-icon no-change">→</span> No Change</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Category</th>
+          <th rowspan="2">Metric</th>
+          <th rowspan="2">Frequency</th>
+          <th colspan="2">MTD</th>
+          <th colspan="2">Last 3 Months</th>
+          <th colspan="2">YTD</th>
+        </tr>
+        <tr>
+          <th>Actual</th>
+          <th>Budget</th>
+          <th>Actual</th>
+          <th>Budget</th>
+          <th>Actual</th>
+          <th>Budget</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="7" class="category-bold">Productivity</td>
+          <td>Production OSD (# Cr pills)</td>
+          <td class="frequency"><span>Daily</span><span class="trend up">↑</span></td>
+          <td class="green-bg">11</td>
+          <td class="grey-bg">10</td>
+          <td class="red-bg">24</td>
+          <td class="grey-bg">25</td>
+          <td class="red-bg">38</td>
+          <td class="grey-bg">40</td>
+        </tr>
+        <tr>
+          <td>Production non-OSD (# Cr units)</td>
+          <td class="frequency"><span>Daily</span><span class="trend down">↓</span></td>
+          <td class="red-bg">9</td>
+          <td class="grey-bg">12</td>
+          <td class="red-bg">22</td>
+          <td class="grey-bg">30</td>
+          <td class="red-bg">42</td>
+          <td class="grey-bg">45</td>
+        </tr>
+        <tr>
+          <td>Utilization (%)</td>
+          <td class="frequency"><span>Daily</span><span class="trend down">↓</span></td>
+          <td class="red-bg">85%</td>
+          <td class="grey-bg">90%</td>
+          <td class="green-bg">92%</td>
+          <td class="grey-bg">90%</td>
+          <td class="red-bg">88%</td>
+          <td class="grey-bg">90%</td>
+        </tr>
+        <tr>
+          <td>OEE (%)</td>
+          <td class="frequency"><span>Daily</span><span class="trend down">↓</span></td>
+          <td class="red-bg">80%</td>
+          <td class="grey-bg">85%</td>
+          <td class="green-bg">88%</td>
+          <td class="grey-bg">85%</td>
+          <td class="green-bg">86%</td>
+          <td class="grey-bg">85%</td>
+        </tr>
+        <tr>
+          <td>Manpower productivity ('000pills/FTE/month)</td>
+          <td class="frequency"><span>Monthly</span><span class="trend up">↑</span></td>
+          <td class="green-bg">3.2</td>
+          <td class="grey-bg">3</td>
+          <td class="green-bg">4</td>
+          <td class="grey-bg">3</td>
+          <td class="green-bg">4.5</td>
+          <td class="grey-bg">3</td>
+        </tr>
+        <tr>
+          <td>Yield OSD (%)</td>
+          <td class="frequency"><span>Daily</span><span class="trend down">↓</span></td>
+          <td class="red-bg">75%</td>
+          <td class="grey-bg">80%</td>
+          <td class="red-bg">78%</td>
+          <td class="grey-bg">82%</td>
+          <td class="red-bg">72%</td>
+          <td class="grey-bg">80%</td>
+        </tr>
+        <tr>
+          <td>Yield non-OSD (%)</td>
+          <td class="frequency"><span>Daily</span><span class="trend down">↓</span></td>
+          <td class="red-bg">80%</td>
+          <td class="grey-bg">82%</td>
+          <td class="red-bg">78%</td>
+          <td class="grey-bg">83%</td>
+          <td class="red-bg">76%</td>
+          <td class="grey-bg">82%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

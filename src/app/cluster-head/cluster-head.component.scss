@@ -1,0 +1,175 @@
+.user-main-content {
+    margin-top: 100px;
+    margin-left: 330px;
+    margin-right: 15px;
+    padding: 30px;
+    background: #fff;
+  }
+  
+  .cluster-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2e3e96;
+    margin-bottom: 15px;
+  }
+  
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .cluster-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    background: #f7f7f7;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    gap: 20px;
+  }
+  
+  .filters {
+    display: flex;
+    gap: 20px;
+  
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+  
+      label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+  
+      select {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    }
+  }
+  
+  .trend-legend {
+    font-size: 13px;
+  
+    strong {
+      display: block;
+      margin-bottom: 10px;
+    }
+  
+    .legend-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+  
+      .legend-icon {
+        display: inline-block;
+        width: 16px;
+  
+        &.up {
+          color: #0ea5e9;
+        }
+        &.down {
+          color: #f44336;
+        }
+        &.no-change {
+          color: orange;
+        }
+      }
+    }
+  
+    .checkboxes {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+  
+      .budget-legend {
+        font-weight: bold;
+        background: #ccc;
+        padding: 0 6px;
+        border-radius: 3px;
+      }
+    }
+  }
+  
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0c8d3c;
+    margin-bottom: 20px;
+  }
+  
+  .metric-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .metric-card {
+    width: 200px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+  
+    .trend-arrow {
+      &.up {
+        color: #0ea5e9;
+      }
+      &.down {
+        color: #f44336;
+      }
+      &.no-change {
+        color: orange;
+      }
+    }
+  
+    .budget-values {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+  
+    .bar-values {
+      display: flex;
+      justify-content: space-between;
+      .bar {
+        width: 20%;
+        text-align: center;
+  
+        .bar-label {
+          font-weight: 600;
+          font-size: 14px;
+          color: #000;
+        }
+      }
+    }
+  
+    .bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #888;
+      margin-top: 8px;
+    }
+  }
+  

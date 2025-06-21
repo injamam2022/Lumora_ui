@@ -1,0 +1,155 @@
+.user-main-content {
+  margin-top: 100px;
+  margin-left: 330px;
+  margin-right: 15px;
+  padding: 30px;
+  background: #f5f6fa;
+}
+
+.user-main-content {
+  padding: 2rem;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f7f8fc;
+  color: #333;
+}
+
+.operator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  .title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3eaa;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #444;
+  }
+
+  .back-btn {
+    border: none;
+    background: none;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.equipment-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to right, #2e7d32, #c9a7dd);
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+
+  .equipment-name {
+    font-weight: 600;
+  }
+
+  .rated-speed,
+  .validated-speed {
+    font-weight: 500;
+  }
+}
+
+.trend-legend {
+  background: #efefef;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+
+  strong {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .legend-row {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.95rem;
+    align-items: center;
+
+    .legend-icon {
+      display: inline-block;
+      margin-right: 5px;
+      font-weight: bold;
+    }
+
+    .up {
+      color: #28a745;
+    }
+
+    .down {
+      color: #dc3545;
+    }
+
+    .no-change {
+      color: #f0ad4e;
+    }
+  }
+}
+
+.data-section {
+  margin-bottom: 2rem;
+
+  h4 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: #222;
+  }
+
+  .circle-data-wrap {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+
+    .circle-card {
+      flex: 1;
+      min-width: 150px;
+      text-align: center;
+
+      .label {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .circle {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      &.green .circle {
+        background-color: #28a745;
+      }
+
+      &.red .circle {
+        background-color: #dc3545;
+      }
+    }
+  }
+}
