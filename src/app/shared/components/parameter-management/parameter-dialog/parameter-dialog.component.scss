@@ -1,19 +1,89 @@
-.parameter-dialog-wrapper {
-  .formgroup {
-    margin-bottom: 20px;
-    p {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    input[type="text"],
-    p-dropdown {
-      width: 100%;
-    }
-  }
+.side-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: rgba(0,0,0,0.04);
+}
 
-  .buttonwrap {
-    margin-top: 20px; // Add space above the button
-    display: flex;
-    justify-content: flex-end; // Align button to the right if needed, based on common patterns
+.modal-wrap-body {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(60, 72, 88, 0.18);
+  padding: 1.2rem 1.2rem 1rem 1.2rem;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.modal-body {
+  width: 100%;
+  padding: 0;
+  /* Remove any card-like styling from the form content */
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.form-wrap {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.8rem;
+}
+
+.form-wrap label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #344767;
+  margin-bottom: 0.4rem;
+}
+
+.form-wrap input,
+.form-wrap textarea,
+.form-wrap .p-dropdown {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.form-wrap textarea {
+  min-height: 48px;
+  resize: vertical;
+}
+
+.multi-option-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.add-option-btn {
+  margin-top: 0.3rem;
+}
+
+.modal-footer {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.footer-button {
+  display: flex;
+  gap: 0.7rem;
+}
+
+@media (max-width: 600px) {
+  .modal-wrap-body {
+    padding: 0.5rem;
+    max-width: 98vw;
   }
 }

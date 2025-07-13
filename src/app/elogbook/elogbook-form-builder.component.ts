@@ -8,8 +8,11 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { ElogListOfData, ElogsCreation } from './interface/elogbook.interface';
 import { ProcessExecutionService } from '../shared/services/process-execution.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ToasterService } from '../shared/services/toaster.service';
+import { ElogbookService } from '../shared/services/elog-execution.service';
+import { ParameterManagementComponent } from '../shared/components/parameter-management/parameter-management/parameter-management.component';
+import { ElogbookParameterListComponent } from './elogbook-parameter-list.component';
 
 interface ElogbookParameter {
   parameter_name: string;
@@ -27,7 +30,7 @@ interface ElogbookParameter {
 @Component({
   selector: 'app-elogbook-form-builder',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, InputTextareaModule, DropdownModule,SidebarComponent,HeaderComponent],
+  imports: [CommonModule, FormsModule, ButtonModule, InputTextareaModule, DropdownModule,SidebarComponent,HeaderComponent, ElogbookParameterListComponent],
   templateUrl: './elogbook-form-builder.component.html',
   styleUrl: './elogbook-form-builder.component.scss',
 })
@@ -52,72 +55,77 @@ export class ElogbookFormBuilderComponent {
     { parameter_type_id: '5', parameter_type_name: 'Multi-Select' },
   ];
 
+  public parameterList: any[] = [];
+
   constructor(
     public processExecutionService: ProcessExecutionService,
     public router: Router,
-    public toasterService: ToasterService
+    public toasterService: ToasterService,
+    public elogbookService: ElogbookService,
+    private route: ActivatedRoute
   ) {}
 
-  addParameter() {
-    this.parameters.push({
-      parameter_name: '',
-      parameter_description: '',
-      parameter_type_id: '',
-      multiSelectOptions: [],
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const elogs_id = params['id'];
+      if (elogs_id) {
+        // Editing existing Elogbook
+        this.eLogIdCreated = +elogs_id;
+        const { elogbook$, parameters$ } = this.elogbookService.getSingleElogbookWithParameters(elogs_id);
+        elogbook$.subscribe(res => {
+          if (res.all_list && res.all_list.length > 0) {
+            const elog = res.all_list[0];
+            this.elogsCreationData = {
+              elogs_id: elog.elogs_id,
+              elogs_name: elog.elogs_name,
+              reference_document: elog.reference_document,
+              sop_id: elog.sop_id,
+              format_number: elog.format_number,
+              added_date: elog.added_date
+            };
+            this.showParameterSection = true;
+          }
+        });
+        parameters$.subscribe(res => {
+          if (res.all_list) {
+            this.parameters = res.all_list.map((param: any) => ({
+              param_id: param.param_id,
+              parameter_name: param.parameter_name,
+              parameter_description: param.parameter_description,
+              parameter_type_id: param.parameter_type_id,
+              multiSelectOptions: param.options ? param.options.split(',') : []
+            }));
+          }
+        });
+      }
     });
   }
 
-  removeParameter(index: number) {
-    this.parameters.splice(index, 1);
-  }
-
-  addMultiSelectOption(param: ElogbookParameter) {
-    if (!param.multiSelectOptions) param.multiSelectOptions = [];
-    param.multiSelectOptions.push('');
-  }
-
-  removeMultiSelectOption(param: ElogbookParameter, idx: number) {
-    if (param.multiSelectOptions) param.multiSelectOptions.splice(idx, 1);
-  }
-
   save() {
-    console.log(this.parameters);
-
-    const elogParametersPayload = {
-      elog_id: this.eLogIdCreated,
-      parameters: this.parameters.map(param => {
-        const parameterPayload: any = { // Use 'any' type for flexibility due to uncertainty
-          parameter_name: param.parameter_name,
-          parameter_description: param.parameter_description,
-          parameter_type_id: param.parameter_type_id,
-          // Assuming backend links parameters to elog_id from the top level payload
-          // task_id and stage_id might not be needed for elog parameters
-        };
-
-        if (param.parameter_type_id === '5' && param.multiSelectOptions) {
-          parameterPayload.options = param.multiSelectOptions.map(option => ({
-            options_for_parameter: option,
-            // Might need parameter_id here if options are saved with the parameter
-          }));
-        }
-
-        return parameterPayload;
-      })
+    // Build the payload for update
+    const cleanedParameters = this.parameterList.map((param: any) => ({
+      ...(param.param_id ? { param_id: param.param_id } : {}),
+      parameter_name: param.parameter_name,
+      parameter_description: param.parameter_description,
+      parameter_type_id: param.parameter_type_id,
+      ...(param.parameter_type_id === '5' ? { multiSelectOptions: param.options || [] } : {})
+    }));
+    const elogbookPayload = {
+      elogs_master: {
+        elogs_id: this.eLogIdCreated,
+        elogs_name: this.elogsCreationData.elogs_name,
+        reference_document: this.elogsCreationData.reference_document,
+        sop_id: this.elogsCreationData.sop_id,
+        format_number: this.elogsCreationData.format_number,
+        added_date: this.elogsCreationData.added_date
+      },
+      parameters: cleanedParameters
     };
-
-    console.log('Payload to send for saving parameters:', elogParametersPayload);
-
-    // **Here you would call the actual service method to save the parameters.**
-    // Since the exact method for 'General/Save_parameters' is unknown,
-    // I cannot implement the actual service call here.
-    // You would replace this comment with something like:
-    // this.elogbookService.saveElogParameters(elogParametersPayload).subscribe(...)
-    // or
-    this.processExecutionService.saveElogParameters(elogParametersPayload).subscribe((response) => {
-      console.log(elogParametersPayload);
-      console.log(response);
-      if(response.stat == 200){
-        this.toasterService.successToast('Parameters Saved Successfully');
+    this.elogbookService.updateElogbookWithParameters(elogbookPayload).subscribe((response) => {
+      if(response.stat === 200){
+        this.toasterService.successToast('E-Logbook and Parameters Updated Successfully');
+      } else {
+        this.toasterService.errorToast('Failed to update E-Logbook and Parameters');
       }
     });
   }
@@ -137,4 +145,4 @@ export class ElogbookFormBuilderComponent {
         }
       });
   }
-} 
+}

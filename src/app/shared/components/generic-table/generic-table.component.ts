@@ -127,6 +127,7 @@ export class GenericTableComponent {
   }
 
   triggerDeleteEvent(id: string) {
+    console.log('Delete ID:', id);
     this.deleteEvent.emit(id);
   }
 

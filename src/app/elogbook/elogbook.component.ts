@@ -10,8 +10,10 @@ import { ElogbookFormBuilderComponent } from './elogbook-form-builder.component'
 import { ElogbookService } from '../shared/services/elog-execution.service';
 import { ElogbookListData } from '../manage-process/interface/manage-process-interface';
 import { Router } from '@angular/router';
+import { EntityIdMapping } from '../shared/enum/entity-is-mapping.enum';
 import { ParameterManagementComponent } from '../shared/components/parameter-management/parameter-management/parameter-management.component';
 import { FilterMatchMode } from 'primeng/api';
+import { ToasterService } from '../shared/services/toaster.service';
 
 @Component({
   selector: 'app-elogbook',
@@ -36,7 +38,9 @@ export class ElogbookComponent {
 
   public allElogbookListData!: ElogbookListData;
 
-  constructor(private dialogService: DialogService, private elogbookService: ElogbookService, public router: Router) {
+  public entityIdMapping = EntityIdMapping;
+
+  constructor(private dialogService: DialogService, private elogbookService: ElogbookService, public router: Router, public toasterService: ToasterService,) {
     this.getElogbookList();
     this.setGenericTableColumns();
   }
@@ -45,10 +49,13 @@ export class ElogbookComponent {
     // Optionally load from backend here
     const userData = localStorage.getItem('userData');
     const roleId = userData ? JSON.parse(userData).role_id : undefined;
+    this.elogbookService.refreshElogbook$.subscribe((data) => {
     this.elogbookService.getAllElogBook(roleId).subscribe((response) => {
       console.log(response);
       this.allElogbookListData = response;
-    });
+    }
+  );
+  });
   }
 
   public editParticularData(editId: string) {
@@ -62,28 +69,28 @@ export class ElogbookComponent {
   setGenericTableColumns() {
     this.genericTableColumns = [
       {
-        field: 'elog_id',
-        header: 'E-Logbook ID',
-        hasFilter: true,
-        hasSorting: true,
-        translationColumnKey: 'E-Logbook ID',
-        mappedProperty: 'elog_id',
-        matchModeOptions: [
-          { label: 'Contains', value: FilterMatchMode.CONTAINS },
-        ],
-      },
-      {
-        field: 'elog_name',
+        field: 'elogs_name',
         header: 'E-Logbook Name',
         hasFilter: true,
         hasSorting: true,
         translationColumnKey: 'E-Logbook Name',
-        mappedProperty: 'elog_name',
+        mappedProperty: 'elogs_name',
         matchModeOptions: [
           { label: 'Contains', value: FilterMatchMode.CONTAINS },
         ],
       },
       {
+        field: 'sop_id',
+        header: 'E-Logbook ID',
+        hasFilter: true,
+        hasSorting: true,
+        translationColumnKey: 'E-Logbook ID',
+        mappedProperty: 'sop_id',
+        matchModeOptions: [
+          { label: 'Contains', value: FilterMatchMode.CONTAINS },
+        ],
+      },
+      /*{
         field: 'created_by',
         header: 'Created By',
         hasFilter: true,
@@ -93,14 +100,14 @@ export class ElogbookComponent {
         matchModeOptions: [
           { label: 'Contains', value: FilterMatchMode.CONTAINS },
         ],
-      },
+      },*/
       {
-        field: 'created_date',
+        field: 'added_date',
         header: 'Created Date',
         hasFilter: true,
         hasSorting: true,
         translationColumnKey: 'Created Date',
-        mappedProperty: 'created_date',
+        mappedProperty: 'added_date',
         matchModeOptions: [
           { label: 'Contains', value: FilterMatchMode.CONTAINS },
         ],
@@ -117,5 +124,25 @@ export class ElogbookComponent {
         console.log(error);
       },
     });
+  }
+
+  public deleteParticularData(deleteId: string) {
+    console.log('Delete ID:', deleteId);
+      this.elogbookService.deleteElogbook(deleteId).subscribe((response) => {
+        console.log(response);
+        if (response.stat === 200) {
+          this.toasterService.successToast('Deleted Successfully');
+          this.elogbookService.refreshTableData(true);
+          this.getElogbookList();
+        } /*else {
+            alert('Failed to delete E-Logbook');
+          }*/
+        }
+        /*error: () => {
+          alert('Error deleting E-Logbook');
+        }*/
+
+    );
+
   }
 }

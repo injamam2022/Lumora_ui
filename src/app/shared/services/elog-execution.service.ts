@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BaseHttpService } from './base-http.client.service';
 import { ElogbookListData, ProcessListData } from '../../manage-process/interface/manage-process-interface';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import {
   AssignProcessToRole,
   FetchParameterOptions,
@@ -28,7 +28,9 @@ import {
   providedIn: 'root',
 })
 export class ElogbookService {
-  constructor(private readonly baseHttpService: BaseHttpService) {}
+
+  public refreshElogbook$ = new BehaviorSubject(true);
+  constructor(private readonly baseHttpService: BaseHttpService) { }
 
   public getAllElogBook(roleId?: string): Observable<ElogbookListData> {
     let payload = { role_id: roleId };
@@ -165,13 +167,13 @@ export class ElogbookService {
   }
 
   public updateStage(stageId: string, stageName: string) {
-    let payload = { 
-      stage: { 
+    let payload = {
+      stage: {
         "stage_name": stageName
-      } ,
+      },
       "where": {
         "stage_id": stageId
-    }
+      }
     };
     return this.baseHttpService.post<ProcessCreationSuccess>(
       `General/Update`,
@@ -180,10 +182,10 @@ export class ElogbookService {
   }
 
   public updateTask(taskId: string, taskName: string) {
-    let payload = { 
-      task: { 
+    let payload = {
+      task: {
         task_name: taskName
-      } 
+      }
       ,
       "where": {
         "task_id": taskId
@@ -227,4 +229,29 @@ export class ElogbookService {
     console.log(payload);
     return this.baseHttpService.post<any>('General/AssignProcessToUser', payload);
   }
+
+  public deleteElogbook(deleteId: string) {
+    return this.baseHttpService.post<any>('General/Delete', { elogs: { elogs_id: deleteId } });
+  }
+
+  public updateElogbookWithParameters(payload: any) {
+    return this.baseHttpService.post<any>('General/update_elogbook_with_parameters', payload);
+  }
+
+  public getSingleElogbookWithParameters(elogs_id: string) {
+    // Fetch Elogbook details
+    const elogbook$ = this.baseHttpService.post<any>('General/Get', {
+      elogs_master: { elogs_id }
+    });
+    // Fetch parameters for this Elogbook
+    const parameters$ = this.baseHttpService.post<any>('General/Get', {
+      param_master: { elogs_id, status: 1 }
+    });
+    return { elogbook$, parameters$ };
+  }
+
+    public refreshTableData(refresh: boolean) {
+    this.refreshElogbook$.next(true);
+  }
 }
+

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -26,7 +26,9 @@ import { HeaderComponent } from '../../../../header/header.component';
   styleUrl: './parameter-management.component.scss'
 })
 export class ParameterManagementComponent implements OnInit {
-  parameters: Parameter[] = [];
+  @Input() parameters: Parameter[] = [];
+  @Output() parametersChange = new EventEmitter<Parameter[]>();
+  @Input() elogsId: number | string | undefined;
   parameterTypes: ParameterTypeAllList[] = [];
   ref: DynamicDialogRef | undefined;
 
@@ -69,12 +71,14 @@ export class ParameterManagementComponent implements OnInit {
       width: '40%',
       contentStyle: { overflow: 'auto' },
       baseZIndex: 10000,
+      data: { elogs_id: this.elogsId }
     });
 
     this.ref.onClose.subscribe((parameter: Parameter) => {
       if (parameter) {
         this.toasterService.successToast('Parameter added successfully');
         this.parameters.push(parameter); // Add the new parameter to the table
+        this.parametersChange.emit(this.parameters);
       }
     });
   }

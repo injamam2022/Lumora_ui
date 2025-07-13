@@ -10,13 +10,13 @@
       padding-left: 315px;
     }
   }
-  
+
   .add-user-button {
     margin-bottom: 20px;
     display: flex;
     justify-content: flex-end;
   }
-  
+
   :host ::ng-deep .add-user-button button {
     background: #091835;
     border: 0;
@@ -28,7 +28,7 @@
     font-weight: 500;
     color: #fff;
   }
-  
+
   :host ::ng-deep .p-datatable .p-datatable-thead > tr > th .flex {
     display: flex;
     align-items: center;
@@ -45,4 +45,3 @@
     top: 0;
     z-index: 99;
   }
-  

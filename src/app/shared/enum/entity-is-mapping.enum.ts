@@ -5,4 +5,5 @@ export enum EntityIdMapping {
   Product = 'product_id',
   Facility = 'facility_id',
   Process = 'process_id',
+  Elogbook = 'elogs_id',
 }

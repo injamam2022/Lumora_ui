@@ -1,0 +1,48 @@
+<div class="form-card parameters-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+  <div *ngFor="let param of parameters; let i = index" class="eachParamsWrpper" cdkDrag>
+    <div class="parameter-header">
+      <div class="drag-handle" cdkDragHandle>
+        <i class="pi pi-bars"></i>
+      </div>
+      <label>{{ param.parameter_name }}</label>
+      <button class="remove-param" (click)="removeParameter(i)" title="Remove Parameter">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    <div class="form-switcher-wrapper">
+      <ng-container [ngSwitch]="param.parameter_type_id">
+        <div class="form-wrap" *ngSwitchCase="'1'">
+          <input type="text" pInputText class="form-control" placeholder="Enter text" [(ngModel)]="param.parameter_description" />
+        </div>
+        <div class="form-wrap" *ngSwitchCase="'2'">
+          <textarea rows="5" pTextarea class="form-control" placeholder="Enter description" [(ngModel)]="param.parameter_description"></textarea>
+        </div>
+        <div class="form-wrap" *ngSwitchCase="'4'">
+          <input type="number" pInputText class="form-control" placeholder="Enter number" [(ngModel)]="param.parameter_description" />
+        </div>
+        <div class="form-wrap" *ngSwitchCase="'3'">
+          <input type="datetime-local" pInputText class="form-control" [(ngModel)]="param.parameter_description" />
+        </div>
+        <div class="form-wrap" *ngSwitchCase="'5'">
+          <div *ngFor="let opt of param.options!; let j = index" class="multi-option-wrap">
+            <input pInputText [(ngModel)]="param.options![j]" placeholder="Option Name" />
+            <button pButton type="button" class="p-button-danger p-button-text" (click)="removeOption(param, j)" title="Remove option"><i class="pi pi-trash"></i></button>
+          </div>
+          <button pButton type="button" class="p-button-secondary" (click)="addOption(param)">+ Add Option</button>
+        </div>
+        <p *ngSwitchDefault>Unknown Type</p>
+      </ng-container>
+    </div>
+    <div class="drag-preview" *cdkDragPreview>
+      <div class="parameter-preview">
+        <i class="pi pi-bars"></i>
+        <span>{{ param.parameter_name }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="button-wrap">
+  <button class="add-new-parameters" (click)="addParameter()">
+    <i class="pi pi-plus-circle"></i> Add Parameter
+  </button>
+</div>

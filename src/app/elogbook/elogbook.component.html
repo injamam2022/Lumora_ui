@@ -4,14 +4,18 @@
   <div class="add-user-button">
     <p-button (onClick)="openAddElogbookPage()" label="Add E-Logbook" />
   </div>
-  <app-generic-table 
+
+  <app-generic-table
+
     *ngIf="allElogbookListData"
     [genericTableColumns]="genericTableColumns"
     [genericTableData]="allElogbookListData"
+    [entityIdMapping]="entityIdMapping.Elogbook"
     [editButtonStatus]="true"
     [deleteButtonStatus]="true"
     (editEvent)="editParticularData($event)"
-  ></app-generic-table> 
+    (deleteEvent)="deleteParticularData($event)"
+  ></app-generic-table>
 
- 
+
 </section>

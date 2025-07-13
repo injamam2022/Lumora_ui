@@ -7,12 +7,13 @@
       <div class="form-row">
         <div class="form-col">
           <div class="form">
-            <label>Elog  Name</label>
+            <label>Elog Name</label>
             <input
               type="text"
               pInputText
               class="form-control"
               [(ngModel)]="elogsCreationData.elogs_name"
+              placeholder="Elog Name"
             />
           </div>
         </div>
@@ -24,6 +25,7 @@
               pInputText
               class="form-control"
               [(ngModel)]="elogsCreationData.reference_document"
+              placeholder="Reference Document Number"
             />
           </div>
         </div>
@@ -35,6 +37,7 @@
               pInputText
               class="form-control"
               [(ngModel)]="elogsCreationData.sop_id"
+              placeholder="SOP ID"
             />
           </div>
         </div>
@@ -46,6 +49,7 @@
               pInputText
               class="form-control"
               [(ngModel)]="elogsCreationData.format_number"
+              placeholder="Format No"
             />
           </div>
         </div>
@@ -54,43 +58,12 @@
         <button pButton type="button" class="p-button-primary" (click)="createElogs()">Submit</button>
       </div>
 
+      <!-- Parameter Management UI aligned with form -->
+      <app-elogbook-parameter-list [(parameters)]="parameterList"></app-elogbook-parameter-list>
 
-      <div class="elogbook-form-builder" *ngIf="showParameterSection">
-        <div *ngFor="let param of parameters; let i = index" class="elogbook-param-card">
-          <div class="param-header">
-            <span>Parameter {{ i + 1 }}</span>
-            <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text" (click)="removeParameter(i)"></button>
-          </div>
-          <div class="form-wrap">
-            <label>Label</label>
-            <input pInputText [(ngModel)]="param.parameter_name" placeholder="Parameter Label" />
-          </div>
-          <div class="form-wrap">
-            <label>Description</label>
-            <textarea pInputTextarea [(ngModel)]="param.parameter_description" placeholder="Parameter Description"></textarea>
-          </div>
-          <div class="form-wrap">
-            <label>Type</label>
-            <p-dropdown [options]="parameterTypes" optionLabel="parameter_type_name" optionValue="parameter_type_id" [(ngModel)]="param.parameter_type_id" placeholder="Select Type"></p-dropdown>
-          </div>
-          <div class="form-wrap" *ngIf="param.parameter_type_id === '5'">
-            <label>Multi-Select Options</label>
-            <div *ngFor="let opt of param.multiSelectOptions ?? []; let j = index" class="multi-option-wrap">
-              <input pInputText [(ngModel)]="param.multiSelectOptions![j]" placeholder="Option Name" />
-              <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text" (click)="removeMultiSelectOption(param, j)"></button>
-            </div>
-            <button pButton type="button" class="p-button-secondary" (click)="addMultiSelectOption(param)">+ Add Option</button>
-          </div>
-        </div>
-        <div class="button-wrap">
-          <button pButton type="button" class="p-button-primary" (click)="addParameter()">+ Add Parameter</button>
-        </div>
-        <div class="button-wrap">
-          <button pButton type="button" class="p-button-success" (click)="save()">Save E-Logbook</button>
-        </div>
-      </div> 
-
-
+      <div class="button-wrap">
+        <button pButton type="button" class="p-button-success" (click)="save()">Save E-Logbook</button>
+      </div>
     </div>
   </div>
 </section>

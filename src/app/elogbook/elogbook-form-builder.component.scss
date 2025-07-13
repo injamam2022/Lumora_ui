@@ -101,4 +101,26 @@ input[pInputText], textarea[pInputTextarea] {
   display: flex;
   gap: 1rem;
   margin-top: 1.5rem;
-} 
+}
+
+::ng-deep .parameter-management-container {
+  width: 50%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+::ng-deep .parameter-management-container .header {
+  margin-left: 0;
+  text-align: left;
+}
+
+::ng-deep .parameter-management-container h2 {
+  text-align: left;
+  margin-left: 0;
+}
+
+::ng-deep .p-table {
+  width: 100% !important;
+  margin-left: 0 !important;
+}
