@@ -24,6 +24,7 @@ import { OperationalControlTowerComponent } from './operational-control-tower/op
 import { CooDashboardComponent } from './coo-dashboard/coo-dashboard.component';
 import { ClusterHeadComponent } from './cluster-head/cluster-head.component';
 import { OperatorDashboardComponent } from './operator-dashboard/operator-dashboard.component';
+import { MakeFormsEntryComponent } from './make-forms-entry/make-forms-entry.component';
 export const routes: Routes = [
   { path: '', component: LoginComponent },
   {
@@ -177,6 +178,11 @@ export const routes: Routes = [
   {
     path: 'operator-dashboard',
     component: OperatorDashboardComponent,
+    canActivate: [],
+  },
+  {
+    path: 'make-forms-entry/:processId',
+    component: MakeFormsEntryComponent,
     canActivate: [],
   },
 ];
