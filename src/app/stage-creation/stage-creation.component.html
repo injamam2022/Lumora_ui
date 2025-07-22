@@ -152,6 +152,7 @@
             cdkDropList
             (cdkDropListDropped)="onParameterDrop($event, j)"
           >
+          {{task.parameters | json}}
             <div
               *ngFor="let form of task.parameters; let k = index"
               class="eachParamsWrpper"

@@ -153,7 +153,7 @@ export class ManageProcessComponent {
             this.processExecutionService.assignProcessToUser(editId, roleId, userId).subscribe({
               next: (assignResponse) => {
                 if (assignResponse && assignResponse.stat === 200) {
-                  this.router.navigate(['/stage-creation/' + editId]);
+                  this.router.navigate(['/make-forms-entry/' + editId]);
                 } else {
                   this.toasterService.errorToast(assignResponse?.msg || 'Could not assign process.');
                 }

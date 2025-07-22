@@ -1,0 +1,194 @@
+.user-main-content {
+    margin-top: 100px;
+    margin-left: 330px;
+    margin-right: 15px;
+    padding: 30px;
+    background: #fff;
+    transition: 0.5s;
+  
+    &.maincont {
+      padding-left: 315px;
+    }
+  }
+  
+  .all-form-wrap {
+    width: 100%;
+  
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+  
+      .form-col {
+        flex: 0 0 calc(33.333% - 1rem);
+        max-width: calc(33.333% - 1rem);
+  
+        .form {
+          margin-bottom: 1.5rem;
+  
+          label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #344767;
+          }
+  
+          input,
+          textarea,
+          select {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            transition: 0.2s;
+  
+            &:focus {
+              border-color: #1d84ff;
+              outline: none;
+              box-shadow: 0 0 0 3px rgba(29, 132, 255, 0.1);
+            }
+          }
+  
+          textarea {
+            min-height: 100px;
+            resize: vertical;
+          }
+  
+          select {
+            appearance: none;
+            background: url('data:image/svg+xml;utf8,<svg fill="%23344667" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 1rem center;
+            background-size: 1rem;
+          }
+        }
+      }
+    }
+  }
+  
+  /* Dynamic Section Styles */
+  .dynamic-process-wrap {
+    margin-top: 40px;
+    background: #f8f9fc;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  
+    .section-heading {
+      font-size: 24px;
+      font-weight: 700;
+      color: #004aad;
+      margin-bottom: 25px;
+    }
+  
+    .stage-heading {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2563eb;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      border-left: 4px solid #2563eb;
+      padding-left: 10px;
+    }
+  
+    .task-heading {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+  
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 20px;
+  
+      .form-col {
+        flex: 0 0 calc(33.333% - 1rem);
+        max-width: calc(33.333% - 1rem);
+  
+        .form {
+          label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: block;
+            color: #495057;
+          }
+  
+          input,
+          textarea,
+          select {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+  
+            &:focus {
+              border-color: #1d84ff;
+              outline: none;
+              box-shadow: 0 0 0 3px rgba(29, 132, 255, 0.1);
+            }
+          }
+  
+          textarea {
+            min-height: 100px;
+          }
+        }
+      }
+    }
+  }
+
+  .form-submit-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+  
+    .submit-btn {
+      background-color: #004aad;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+  
+      &:hover {
+        background-color: #00337c;
+      }
+  
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+  
+  
+  /* Responsive */
+  @media screen and (max-width: 992px) {
+    .all-form-wrap .form-row .form-col,
+    .dynamic-process-wrap .form-row .form-col {
+      flex: 0 0 calc(50% - 0.75rem);
+      max-width: calc(50% - 0.75rem);
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+    .all-form-wrap .form-row .form-col,
+    .dynamic-process-wrap .form-row .form-col {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  
+    .dynamic-process-wrap .section-heading,
+    .dynamic-process-wrap .stage-heading,
+    .dynamic-process-wrap .task-heading {
+      text-align: center;
+    }
+  }
+  

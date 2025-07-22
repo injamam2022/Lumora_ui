@@ -1,0 +1,41 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+
+<section class="user-main-content">
+  <!-- Static Input Fields -->
+  
+
+  <!-- Dynamic Process Section -->
+  <div class="dynamic-process-wrap" *ngIf="processData">
+    <h2 class="section-heading">Process: {{ processData.process_name }}</h2>
+    <div *ngFor="let stage of processData.stages">
+      <h3 class="stage-heading">{{ stage.stage_name }}</h3>
+      <div *ngFor="let task of stage?.tasks">
+        <h4 class="task-heading">{{ task?.task_name }}</h4>
+        <div class="form-row">
+          <div class="form-col" *ngFor="let param of task?.parameters">
+            <div class="form">
+              <label>{{ param?.parameter_name }}</label>
+              <ng-container [ngSwitch]="param?.parameter_type_id">
+                <input *ngSwitchCase="'1'" type="text" class="form-control" [placeholder]="param?.parameter_description" />
+                <textarea *ngSwitchCase="'2'" class="form-control" [placeholder]="param?.parameter_description"></textarea>
+                <input *ngSwitchCase="'3'" type="date" class="form-control" />
+                <input *ngSwitchCase="'4'" type="number" class="form-control" [placeholder]="param?.parameter_description" />
+                <select *ngSwitchCase="'5'" class="form-control">
+                  <option *ngFor="let opt of param?.options" [value]="opt">{{ opt }}</option>
+                </select>
+
+                <!-- Submit Button Section -->
+                
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ✅ Submit Button -->
+ <div class="form-submit-wrap">
+    <button type="submit" class="submit-btn">Submit</button>
+  </div>
+</section>
