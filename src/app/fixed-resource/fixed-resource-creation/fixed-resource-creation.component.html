@@ -1,0 +1,66 @@
+<div class="add-userwrapper">
+  <form #fixedResourceCreationForm="ngForm" (ngSubmit)="addCreation()">
+    <div class="formgroup">
+      <p>Resource Name</p>
+      <input
+        type="text"
+        pInputText
+        name="resourceName"
+        [(ngModel)]="addFixedResourcePayload.resourceName"
+        placeholder="Enter Resource Name"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Resource Type</p>
+      <input
+        type="text"
+        pInputText
+        name="resourceType"
+        [(ngModel)]="addFixedResourcePayload.resourceType"
+        placeholder="Enter Resource Type"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Resource Code</p>
+      <input
+        type="text"
+        pInputText
+        name="resourceCode"
+        [(ngModel)]="addFixedResourcePayload.resourceCode"
+        placeholder="Enter Resource Code"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Capacity Unit</p>
+      <input
+        type="text"
+        pInputText
+        name="capacityUnit"
+        [(ngModel)]="addFixedResourcePayload.capacityUnit"
+        placeholder="Enter Capacity Unit"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Capacity Quantity</p>
+      <input
+        type="number"
+        pInputText
+        name="capacityQuantity"
+        [(ngModel)]="addFixedResourcePayload.capacityQuantity"
+        placeholder="Enter Capacity Quantity"
+        required
+      />
+    </div>
+    <div class="buttonwrap">
+      <p-button
+        type="submit"
+        label="Submit"
+        [disabled]="fixedResourceCreationForm.form.invalid"
+      />
+    </div>
+  </form>
+</div>

@@ -124,3 +124,93 @@ input[pInputText], textarea[pInputTextarea] {
   width: 100% !important;
   margin-left: 0 !important;
 }
+
+.elogbook-branching-rules-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-top: 2rem;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.branching-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.branching-subtitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.branching-add-rule-form {
+  margin-bottom: 2rem;
+}
+
+.branching-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.branching-form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
+.branching-form-btn {
+  min-width: 120px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.branching-dropdown, .branching-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.branching-add-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.branching-rules-list {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.branching-rule-row {
+  background: #f7f7f7;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1rem;
+}
+
+.branching-rule-if {
+  color: #34495e;
+  font-weight: 500;
+}
+
+.branching-rule-then {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.branching-delete-btn {
+  margin-left: auto;
+}

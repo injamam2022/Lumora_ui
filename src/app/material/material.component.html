@@ -1,0 +1,21 @@
+<app-header></app-header>
+<app-details-section>
+  <section class="user-main-content">
+    <div class="add-user-button">
+      <p-button
+        label="Add Material"
+        (onClick)="openAddMaterialDialog()"
+      />
+    </div>
+    <app-generic-table
+      *ngIf="allMaterialData"
+      [genericTableData]="allMaterialData"
+      [genericTableColumns]="genericTableColumns"
+      [entityIdMapping]="entityIdMapping"
+      [editButtonStatus]="editButtonStatus"
+      [deleteButtonStatus]="deleteButtonStatus"
+      (editEvent)="editParticularData($event)"
+      (deleteEvent)="deleteParticularData($event)"
+    ></app-generic-table>
+  </section>
+</app-details-section> 

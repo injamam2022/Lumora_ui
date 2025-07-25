@@ -6,6 +6,7 @@ import { RoleComponent } from './role/role.component';
 import { ModuleComponent } from './module/module.component';
 import { ManageAccessComponent } from './manage-access/manage-access.component';
 import { DepartmentComponent } from './department/department.component';
+import { RoomComponent } from './room/room.component';
 import { FacilityComponent } from './facility/facility.component';
 import { authGuard } from './shared/guard/auth.guard';
 import { ChooseFacilityComponent } from './choose-facility/choose-facility.component';
@@ -25,6 +26,8 @@ import { CooDashboardComponent } from './coo-dashboard/coo-dashboard.component';
 import { ClusterHeadComponent } from './cluster-head/cluster-head.component';
 import { OperatorDashboardComponent } from './operator-dashboard/operator-dashboard.component';
 import { MakeFormsEntryComponent } from './make-forms-entry/make-forms-entry.component';
+import { PortableResourceComponent } from './portable-resource/portable-resource.component';
+import { MaterialComponent } from './material/material.component';
 export const routes: Routes = [
   { path: '', component: LoginComponent },
   {
@@ -52,6 +55,46 @@ export const routes: Routes = [
     component: DepartmentComponent,
     canActivate: [],
   },
+  {
+    path: 'room',
+    component: RoomComponent,
+    canActivate: []
+  },
+  {
+    path: 'room/:roomModuleId',
+    component: RoomComponent,
+    canActivate: []
+  },
+  {
+    path: 'fixed-resource',
+    loadComponent: () => import('./fixed-resource/fixed-resource.component').then(m => m.FixedResourceComponent),
+    canActivate: []
+  },
+  {
+    path: 'fixed-resource/:fixedResourceModuleId',
+    loadComponent: () => import('./fixed-resource/fixed-resource.component').then(m => m.FixedResourceComponent),
+    canActivate: []
+  },
+  {
+    path: 'portable-resource',
+    loadComponent: () => import('./portable-resource/portable-resource.component').then(m => m.PortableResourceComponent),
+    canActivate: []
+  },
+  {
+    path: 'portable-resource/:portableResourceModuleId',
+    loadComponent: () => import('./portable-resource/portable-resource.component').then(m => m.PortableResourceComponent),
+    canActivate: []
+  },
+  {
+    path: 'material',
+    loadComponent: () => import('./material/material.component').then(m => m.MaterialComponent),
+    canActivate: []
+  },
+  {
+    path: 'material/:materialModuleId',
+    loadComponent: () => import('./material/material.component').then(m => m.MaterialComponent),
+    canActivate: []
+  },
   { path: 'user', component: UserComponent, canActivate: [authGuard] },
   {
     path: 'user/:userModuleId',
@@ -75,7 +118,7 @@ export const routes: Routes = [
     component: ManageAccessComponent,
     canActivate: [],
   },
-  { path: 'facility', component: FacilityComponent, canActivate: [authGuard] },
+  { path: 'facility', component: FacilityComponent, canActivate: [] },
   {
     path: 'facility/:facilityModuleId',
     component: FacilityComponent,

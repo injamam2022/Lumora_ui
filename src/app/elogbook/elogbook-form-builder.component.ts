@@ -15,6 +15,7 @@ import { ParameterManagementComponent } from '../shared/components/parameter-man
 import { ElogbookParameterListComponent } from './elogbook-parameter-list.component';
 
 interface ElogbookParameter {
+  param_id?: string;
   parameter_name: string;
   parameter_description: string;
   parameter_type_id: string;
@@ -56,6 +57,30 @@ export class ElogbookFormBuilderComponent {
   ];
 
   public parameterList: any[] = [];
+  public elogbookBranchingRules: any[] = [];
+  public showAddRule = false;
+  public operatorOptions = [
+    { label: 'Equal To', value: '=' },
+    { label: 'Greater Than', value: '>' },
+    { label: 'Less Than', value: '<' }
+  ];
+  public actionTypeOptions = [
+    { label: 'Hide Parameter', value: 'hide_parameter' },
+    { label: 'Display Error Message', value: 'display_message' },
+    { label: 'Apply Validation', value: 'apply_validation' }
+  ];
+  public newRule: any = {
+    parameter_id: '',
+    parameter_value: '',
+    operator: '=',
+    action_type: 'hide_parameter',
+    target_parameter_id: '',
+    display_message_content: '',
+    validation_min_value: '',
+    validation_max_value: '',
+    validation_regex_pattern: '',
+    validation_message_for_rule: ''
+  };
 
   constructor(
     public processExecutionService: ProcessExecutionService,
@@ -96,6 +121,10 @@ export class ElogbookFormBuilderComponent {
               multiSelectOptions: param.options ? param.options.split(',') : []
             }));
           }
+        });
+        // Fetch elogbook branching rules
+        this.elogbookService.getElogbookBranchingRules(elogs_id).subscribe(res => {
+          this.elogbookBranchingRules = res.data || [];
         });
       }
     });
@@ -144,5 +173,70 @@ export class ElogbookFormBuilderComponent {
           //this.router.navigate(['/elo/' + response.insert_id]);
         }
       });
+  }
+
+  addBranchingRule() {
+    if (!this.eLogIdCreated || !this.newRule.parameter_id || !this.newRule.parameter_value || !this.newRule.operator || !this.newRule.action_type) {
+      this.toasterService.errorToast('Please fill all required fields to add a rule.');
+      return;
+    }
+    const payload: any = {
+      branching_rules: {
+        elog_id: this.eLogIdCreated,
+        parameter_id: this.newRule.parameter_id,
+        parameter_value: this.newRule.parameter_value,
+        operator: this.newRule.operator,
+        action_type: this.newRule.action_type
+      }
+    };
+    if (this.newRule.action_type === 'hide_parameter') {
+      payload.branching_rules.target_parameter_id = this.newRule.target_parameter_id;
+    }
+    if (this.newRule.action_type === 'display_message') {
+      payload.branching_rules.display_message_content = this.newRule.display_message_content;
+    }
+    if (this.newRule.action_type === 'apply_validation') {
+      payload.branching_rules.validation_min_value = this.newRule.validation_min_value;
+      payload.branching_rules.validation_max_value = this.newRule.validation_max_value;
+      payload.branching_rules.validation_regex_pattern = this.newRule.validation_regex_pattern;
+      payload.branching_rules.validation_message_for_rule = this.newRule.validation_message_for_rule;
+    }
+    this.elogbookService.addElogbookBranchingRule(payload).subscribe(res => {
+      if (res.stat === 200) {
+        this.toasterService.successToast('Rule added successfully');
+        this.elogbookService.getElogbookBranchingRules(this.eLogIdCreated.toString()).subscribe(rulesRes => {
+          this.elogbookBranchingRules = rulesRes.data || [];
+        });
+        this.newRule = {
+          parameter_id: '',
+          parameter_value: '',
+          operator: '=',
+          action_type: 'hide_parameter',
+          target_parameter_id: '',
+          display_message_content: '',
+          validation_min_value: '',
+          validation_max_value: '',
+          validation_regex_pattern: '',
+          validation_message_for_rule: ''
+        };
+        this.showAddRule = false;
+      } else {
+        this.toasterService.errorToast('Failed to add rule');
+      }
+    });
+  }
+
+  deleteBranchingRule(branching_rules_id: string) {
+    const payload = { branching_rules: { branching_rules_id } };
+    this.elogbookService.deleteElogbookBranchingRule(payload).subscribe(res => {
+      if (res.stat === 200) {
+        this.toasterService.successToast('Rule deleted successfully');
+        this.elogbookService.getElogbookBranchingRules(this.eLogIdCreated.toString()).subscribe(rulesRes => {
+          this.elogbookBranchingRules = rulesRes.data || [];
+        });
+      } else {
+        this.toasterService.errorToast('Failed to delete rule');
+      }
+    });
   }
 }

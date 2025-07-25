@@ -1,0 +1,21 @@
+<app-header></app-header>
+<app-details-section>
+  <section class="user-main-content">
+    <div class="add-user-button">
+      <p-button
+        label="Add Portable Resource"
+        (onClick)="openAddPortableResourceDialog()"
+      />
+    </div>
+    <app-generic-table
+      *ngIf="allPortableResourceData"
+      [genericTableData]="allPortableResourceData"
+      [genericTableColumns]="genericTableColumns"
+      [entityIdMapping]="entityIdMapping"
+      [editButtonStatus]="editButtonStatus"
+      [deleteButtonStatus]="deleteButtonStatus"
+      (editEvent)="editParticularData($event)"
+      (deleteEvent)="deleteParticularData($event)"
+    ></app-generic-table>
+  </section>
+</app-details-section> 

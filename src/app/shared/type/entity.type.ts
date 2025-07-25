@@ -8,10 +8,4 @@ import { Role } from '../../role/interface/role.interface';
 import { AllUser } from '../../user/interface/user.interface';
 import { ElogbookListData } from '../../manage-process/interface/manage-process-interface';
 //AllUser | Role | Department | Facility |
-export type Entity =
-  | ProcessListData
-  | DepartmentData
-  | Role
-  | AllUser
-  | Facility
-  | ElogbookListData;
+export type Entity = any;

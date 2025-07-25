@@ -250,6 +250,19 @@ export class ElogbookService {
     return { elogbook$, parameters$ };
   }
 
+  public getElogbookBranchingRules(elog_id: string) {
+    let payload = { elog_id };
+    return this.baseHttpService.post<any>('General/GetBranchingRulesForElog', payload);
+  }
+
+  public addElogbookBranchingRule(payload: any) {
+    return this.baseHttpService.post<any>('General/Add', payload);
+  }
+
+  public deleteElogbookBranchingRule(payload: any) {
+    return this.baseHttpService.post<any>('General/Delete', payload);
+  }
+
     public refreshTableData(refresh: boolean) {
     this.refreshElogbook$.next(true);
   }

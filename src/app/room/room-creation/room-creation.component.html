@@ -1,0 +1,59 @@
+<div class="add-userwrapper">
+  <form #roomCreationForm="ngForm" (ngSubmit)="addCreation()">
+    <div class="formgroup">
+      <p>Room Name</p>
+      <input
+        type="text"
+        pInputText
+        name="roomName"
+        [(ngModel)]="addRoomPayload.roomName"
+        placeholder="Enter Room Name"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Room Type</p>
+      <input
+        type="text"
+        pInputText
+        name="roomType"
+        [(ngModel)]="addRoomPayload.roomType"
+        placeholder="Enter Room Type"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Section Area ID</p>
+      <input
+        type="text"
+        pInputText
+        name="sectionAreaId"
+        [(ngModel)]="addRoomPayload.sectionAreaId"
+        placeholder="Enter Section Area ID"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <label for="fixedResourcesSelect">Fixed Resources</label>
+      <p-multiSelect
+        id="fixedResourcesSelect"
+        [options]="fixedResources"
+        optionLabel="resource_name"
+        optionValue="resource_id"
+        [(ngModel)]="selectedResourceIds"
+        name="fixedResources"
+        placeholder="Select Fixed Resources"
+        display="chip"
+        [showClear]="true"
+        [style]="{width: '100%'}"
+      ></p-multiSelect>
+    </div>
+    <div class="buttonwrap">
+      <p-button
+        type="submit"
+        label="Submit"
+        [disabled]="roomCreationForm.form.invalid"
+      />
+    </div>
+  </form>
+</div>

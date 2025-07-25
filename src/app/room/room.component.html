@@ -1,0 +1,21 @@
+<app-header></app-header>
+<app-details-section>
+  <section class="user-main-content">
+    <div class="add-user-button">
+      <p-button
+        label="Add Room"
+        (onClick)="openAddRoomDialog()"
+      />
+    </div>
+    <app-generic-table
+      *ngIf="allRoomData"
+      [genericTableData]="allRoomData"
+      [genericTableColumns]="genericTableColumns"
+      [entityIdMapping]="entityIdMapping.Room"
+      [editButtonStatus]="editButtonStatus"
+      [deleteButtonStatus]="deleteButtonStatus"
+      (editEvent)="editParticularData($event)"
+      (deleteEvent)="deleteParticularData($event)"
+    ></app-generic-table>
+  </section>
+</app-details-section>
