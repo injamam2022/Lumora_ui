@@ -77,6 +77,20 @@ export class RoomComponent {
       mappedProperty: 'section_area_id',
     },
     {
+      field: 'assigned_resources',
+      header: 'Assigned Fixed Resources',
+      hasFilter: true,
+      hasSorting: true,
+      matchModeOptions: [
+        {
+          label: 'Contains',
+          value: FilterMatchMode.CONTAINS,
+        },
+      ],
+      translationColumnKey: 'Assigned Fixed Resources',
+      mappedProperty: 'assigned_resources',
+    },
+    {
       field: 'created_at',
       header: 'Created At',
       hasFilter: true,
@@ -123,8 +137,19 @@ export class RoomComponent {
       });
 
     this.roomService.refreshRoom$.subscribe((data) => {
-      this.roomService.getAllRoom().subscribe((response) => {
-        this.allRoomData = response;
+      this.roomService.getAllRoomWithResources().subscribe({
+        next: (response) => {
+          console.log('Room with Resources Response:', response);
+          this.allRoomData = response;
+        },
+        error: (error) => {
+          console.error('Error fetching room with resources:', error);
+          // Fallback to original method if new one fails
+          this.roomService.getAllRoom().subscribe((fallbackResponse) => {
+            console.log('Fallback Response:', fallbackResponse);
+            this.allRoomData = fallbackResponse;
+          });
+        }
       });
     });
   }
