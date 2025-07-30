@@ -80,4 +80,8 @@ export class RoomService {
     const payload = { room: roomData, room_id: roomId, resource_ids: resourceIds };
     return this.baseHttpService.post<any>('General/update_room_with_resources', payload);
   }
+
+  public getRoomWithResourcesSpecific(roomData: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/get_room_with_resources_specific', roomData);
+  }
 }

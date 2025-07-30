@@ -2,31 +2,285 @@
 <app-header></app-header>
 
 <section class="user-main-content">
-  <!-- Static Input Fields -->
-  
+  <!-- New Static Fields Section -->
+  <div class="static-fields-wrap" *ngIf="processData">
+    <h2 class="section-heading">Process: {{ processData.process_name }}</h2>
+
+    <!-- Facility, Department, Room, Material Fields -->
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form">
+          <label>Facility *</label>
+          <p-dropdown
+            [options]="facilities"
+            [(ngModel)]="selectedFacility"
+            optionLabel="location_name"
+            placeholder="Select Facility"
+            [filter]="true"
+            (onChange)="onFacilityChange()"
+            [appendTo]="'body'"
+            class="form-control"
+          ></p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-col">
+        <div class="form">
+          <label>Department *</label>
+          <p-dropdown
+            [options]="departments"
+            [(ngModel)]="selectedDepartment"
+            optionLabel="department_name"
+            placeholder="Select Department"
+            [filter]="true"
+            (onChange)="onDepartmentChange()"
+            [appendTo]="'body'"
+            class="form-control"
+          ></p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-col">
+        <div class="form">
+          <label>Room *</label>
+          <p-dropdown
+            [options]="rooms"
+            [(ngModel)]="selectedRoom"
+            optionLabel="room_name"
+            placeholder="Select Room"
+            [filter]="true"
+            (onChange)="onRoomChange()"
+            [appendTo]="'body'"
+            class="form-control"
+          ></p-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form">
+          <label>Material *</label>
+          <p-dropdown
+            [options]="materials"
+            [(ngModel)]="selectedMaterial"
+            optionLabel="product_name"
+            placeholder="Select Material"
+            [filter]="true"
+            (onChange)="onMaterialChange()"
+            [appendTo]="'body'"
+            class="form-control"
+          ></p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-col">
+        <div class="form">
+          <label>Material Description</label>
+          <textarea
+            class="form-control"
+            [value]="materialDescription"
+            readonly
+            placeholder="Material description will appear here"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource Management Table Section -->
+  <div class="resource-table-section">
+    <h3 class="table-heading">Resource Management</h3>
+
+    <!-- Fixed Resource Table -->
+    <div class="resource-table-container" *ngIf="selectedRoom">
+      <h4 class="resource-section-title">Fixed Resource</h4>
+      <div class="table-wrapper">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Resource ID</th>
+              <th>Resource Description</th>
+              <th>Digital Clock</th>
+              <th colspan="4">Activity</th>
+            </tr>
+            <tr class="sub-header">
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Start</th>
+              <th>Stop</th>
+              <th>Pause</th>
+              <th>Resume</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let resource of roomFixedResources; let i = index" class="resource-row">
+              <td>{{ resource.resource_id }}</td>
+              <td>{{ resource.resource_name }}</td>
+              <td class="digital-clock">
+                <div class="clock-display">
+                  {{ digitalClocks[resource.resource_id + '_' + resource.resource_name] || '00:00:00' }}
+                </div>
+              </td>
+              <td>
+                <button class="activity-btn start-btn"
+                        [class.active]="resource.activities?.start"
+                        [disabled]="resource.activities?.stop"
+                        (click)="toggleActivity(resource, 'start')">
+                  Start
+                </button>
+              </td>
+              <td>
+                <button class="activity-btn stop-btn"
+                        [class.active]="resource.activities?.stop"
+                        [disabled]="!resource.activities?.start"
+                        (click)="toggleActivity(resource, 'stop')">
+                  Stop
+                </button>
+              </td>
+              <td>
+                <button class="activity-btn pause-btn"
+                        [class.active]="resource.activities?.pause"
+                        [disabled]="!resource.activities?.start || resource.activities?.stop"
+                        (click)="toggleActivity(resource, 'pause')">
+                  Pause
+                </button>
+              </td>
+              <td>
+                <button class="activity-btn resume-btn"
+                        [class.active]="resource.activities?.resume"
+                        [disabled]="!resource.activities?.pause || resource.activities?.stop"
+                        (click)="toggleActivity(resource, 'resume')">
+                  Resume
+                </button>
+              </td>
+            </tr>
+            <tr class="add-row">
+              <td colspan="7">
+                <button class="add-resource-btn" (click)="addFixedResource()">
+                  Add Fixed Resource
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Portable Resource Table -->
+    <div class="resource-table-container" *ngIf="selectedRoom">
+      <h4 class="resource-section-title">Portable Resource</h4>
+
+      <!-- Portable Resource Selection Dropdown -->
+      <div class="resource-selection-wrapper">
+        <label class="resource-selection-label">Select Portable Resources:</label>
+        <p-multiSelect
+          [options]="allPortableResources"
+          [(ngModel)]="selectedPortableResources"
+          optionLabel="resource_name"
+          placeholder="Select Portable Resources to display in table"
+          [filter]="true"
+          [appendTo]="'body'"
+          class="resource-selection-dropdown"
+          (onChange)="onPortableResourceSelectionChange()"
+        ></p-multiSelect>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Resource ID</th>
+              <th>Resource Description</th>
+              <th>Digital Clock</th>
+              <th colspan="4">Activity</th>
+            </tr>
+            <tr class="sub-header">
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Start</th>
+              <th>Stop</th>
+              <th>Pause</th>
+              <th>Resume</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let resource of selectedPortableResources; let i = index" class="resource-row">
+              <td>{{ resource.resource_id }}</td>
+              <td>{{ resource.resource_name }}</td>
+              <td class="digital-clock">
+                <div class="clock-display">
+                  {{ digitalClocks[resource.resource_id + '_' + resource.resource_name] || '00:00:00' }}
+                </div>
+              </td>
+              <td>
+                <button class="activity-btn start-btn"
+                        [class.active]="resource.activities?.start"
+                        [disabled]="resource.activities?.stop"
+                        (click)="toggleActivity(resource, 'start')">
+                  Start
+                </button>
+              </td>
+              <td>
+                <button class="activity-btn stop-btn"
+                        [class.active]="resource.activities?.stop"
+                        [disabled]="!resource.activities?.start"
+                        (click)="toggleActivity(resource, 'stop')">
+                  Stop
+                </button>
+              </td>
+              <td>
+                <button class="activity-btn pause-btn"
+                        [class.active]="resource.activities?.pause"
+                        [disabled]="!resource.activities?.start || resource.activities?.stop"
+                        (click)="toggleActivity(resource, 'pause')">
+                  Pause
+                </button>
+              </td>
+              <td>
+                <button class="activity-btn resume-btn"
+                        [class.active]="resource.activities?.resume"
+                        [disabled]="!resource.activities?.pause || resource.activities?.stop"
+                        (click)="toggleActivity(resource, 'resume')">
+                  Resume
+                </button>
+              </td>
+            </tr>
+            <tr class="add-row">
+              <td colspan="7">
+                <button class="add-resource-btn" (click)="addPortableResource()">
+                  Add Portable Resource
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
   <!-- Dynamic Process Section -->
+   {{processData | json }}
   <div class="dynamic-process-wrap" *ngIf="processData">
-    <h2 class="section-heading">Process: {{ processData.process_name }}</h2>
     <div *ngFor="let stage of processData.stages">
       <h3 class="stage-heading">{{ stage.stage_name }}</h3>
-      <div *ngFor="let task of stage?.tasks">
+      <div *ngFor="let task of stage?.tasks; trackBy: trackByTaskId">
         <h4 class="task-heading">{{ task?.task_name }}</h4>
         <div class="form-row">
-          <div class="form-col" *ngFor="let param of task?.parameters">
+            {{task?.parameters | json}}
+          <div class="form-col" *ngFor="let param of task?.parameters; trackBy: trackByParameterId">
             <div class="form">
               <label>{{ param?.parameter_name }}</label>
               <ng-container [ngSwitch]="param?.parameter_type_id">
-                <input *ngSwitchCase="'1'" type="text" class="form-control" [placeholder]="param?.parameter_description" />
-                <textarea *ngSwitchCase="'2'" class="form-control" [placeholder]="param?.parameter_description"></textarea>
-                <input *ngSwitchCase="'3'" type="date" class="form-control" />
-                <input *ngSwitchCase="'4'" type="number" class="form-control" [placeholder]="param?.parameter_description" />
-                <select *ngSwitchCase="'5'" class="form-control">
+                <input *ngSwitchCase="'1'" type="text" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" />
+                <textarea *ngSwitchCase="'2'" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name"></textarea>
+                <input *ngSwitchCase="'3'" type="date" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" />
+                <input *ngSwitchCase="'4'" type="number" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" />
+                <select *ngSwitchCase="'5'" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name">
                   <option *ngFor="let opt of param?.options" [value]="opt">{{ opt }}</option>
                 </select>
-
-                <!-- Submit Button Section -->
-                
               </ng-container>
             </div>
           </div>
@@ -34,8 +288,9 @@
       </div>
     </div>
   </div>
-  <!-- ✅ Submit Button -->
+
+  <!-- Submit Button -->
  <div class="form-submit-wrap">
-    <button type="submit" class="submit-btn">Submit</button>
+    <button type="submit" class="submit-btn" (click)="submitForm()">Submit</button>
   </div>
 </section>

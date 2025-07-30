@@ -15,4 +15,10 @@ export interface FixedResource {
   created_at: string;
   updated_at: string;
   del_status: string;
+  activities?: {
+    start?: boolean;
+    stop?: boolean;
+    pause?: boolean;
+    resume?: boolean;
+  };
 }

@@ -18,7 +18,14 @@ export class BaseHttpService {
 
   //post data generic call
   public post<T>(url: string, payload?: unknown): Observable<T> {
-    return this.http.post<T>(API_URL + url, payload).pipe(map((data) => data));
+    console.log('=== BASE HTTP SERVICE DEBUG ===');
+    console.log('Making POST request to:', API_URL + url);
+    console.log('Payload:', payload);
+
+    return this.http.post<T>(API_URL + url, payload).pipe(map((data) => {
+      console.log('Response received:', data);
+      return data;
+    }));
   }
 
   //put data generic call

@@ -12,7 +12,12 @@ export class PortableResourceService {
   constructor(public baseHttpService: BaseHttpService) {}
 
   public getAllPortableResources(): Observable<PortableResourceData> {
-    return this.baseHttpService.post<PortableResourceData>('/General/Get', {
+    console.log('=== PORTABLE RESOURCE SERVICE DEBUG ===');
+    console.log('Calling getAllPortableResources()');
+    console.log('API URL:', '/General/get_portable_resources');
+    console.log('Payload:', { portable_resource: { del_status: 0 } });
+
+    return this.baseHttpService.post<PortableResourceData>('/General/get_portable_resources', {
       portable_resource: { del_status: 0 },
     });
   }
@@ -45,4 +50,4 @@ export class PortableResourceService {
   public refreshTableData(refresh: boolean) {
     this.refreshPortableResource$.next(true);
   }
-} 
+}

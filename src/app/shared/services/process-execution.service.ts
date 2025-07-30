@@ -175,8 +175,8 @@ export class ProcessExecutionService {
   }
 
   public updateStage(stageId: string, stageName: string) {
-    let payload = { 
-      stage: { 
+    let payload = {
+      stage: {
         "stage_name": stageName
       } ,
       "where": {
@@ -190,10 +190,10 @@ export class ProcessExecutionService {
   }
 
   public updateTask(taskId: string, taskName: string) {
-    let payload = { 
-      task: { 
+    let payload = {
+      task: {
         task_name: taskName
-      } 
+      }
       ,
       "where": {
         "task_id": taskId
@@ -250,15 +250,34 @@ export class ProcessExecutionService {
     //const cleanedRules = rules.map(({ parameterOptions, ...rest }) => rest);
     return this.baseHttpService.post<any>(
       'General/AddBranchingRules',
-       rules 
+       rules
     );
   }
 
-  deleteBranchingRules(branchingRulesId: string) {
-    const payload = { branching_rules: { branching_rules_id: branchingRulesId } };
-    return this.baseHttpService.post<any>(
-      'General/Delete',
-      payload
-    );
+  public deleteBranchingRules(branchingRulesId: string) {
+    let payload = {
+      branching_rules: { branching_rules_id: branchingRulesId },
+    };
+    return this.baseHttpService.post<string>(`General/Delete`, payload);
+  }
+
+  public submitFormData(formData: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/SaveFormSubmission', formData);
+  }
+
+  public getParameterValues(processId: string): Observable<any> {
+    const payload = { process_id: processId };
+    return this.baseHttpService.post<any>('General/get_parameter_values', payload);
+  }
+
+  public getFormSubmissions(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/Get', payload);
+  }
+
+  public getCompleteFormData(processId: string): Observable<any> {
+    const payload = { process_id: processId };
+    console.log('Calling getCompleteFormData with payload:', payload);
+    // Use the index routing pattern that calls get_complete_form_data_data
+    return this.baseHttpService.post<any>('General/get_complete_form_data', payload);
   }
 }
