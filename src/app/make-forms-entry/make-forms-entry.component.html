@@ -158,9 +158,9 @@
             </tr>
             <tr class="add-row">
               <td colspan="7">
-                <button class="add-resource-btn" (click)="addFixedResource()">
+                <!-- <button class="add-resource-btn" (click)="addFixedResource()">
                   Add Fixed Resource
-                </button>
+                </button>-->
               </td>
             </tr>
           </tbody>
@@ -250,9 +250,9 @@
             </tr>
             <tr class="add-row">
               <td colspan="7">
-                <button class="add-resource-btn" (click)="addPortableResource()">
+                <!--<button class="add-resource-btn" (click)="addPortableResource()">
                   Add Portable Resource
-                </button>
+                </button>-->
               </td>
             </tr>
           </tbody>
@@ -262,14 +262,13 @@
   </div>
 
   <!-- Dynamic Process Section -->
-   {{processData | json }}
   <div class="dynamic-process-wrap" *ngIf="processData">
     <div *ngFor="let stage of processData.stages">
       <h3 class="stage-heading">{{ stage.stage_name }}</h3>
       <div *ngFor="let task of stage?.tasks; trackBy: trackByTaskId">
         <h4 class="task-heading">{{ task?.task_name }}</h4>
         <div class="form-row">
-            {{task?.parameters | json}}
+            <!--{{task?.parameters | json}}-->
           <div class="form-col" *ngFor="let param of task?.parameters; trackBy: trackByParameterId">
             <div class="form">
               <label>{{ param?.parameter_name }}</label>

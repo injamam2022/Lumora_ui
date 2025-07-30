@@ -56,7 +56,7 @@
       </div>
     </div>
 
-   
+
   </div>
 
   <div class="form-builder-btn">
@@ -85,8 +85,8 @@
           class="task-all-wrap"
           *ngFor="let stage of processCreationData.data.stages; let i = index"
         >
-          <div 
-            class="stage-card" 
+          <div
+            class="stage-card"
             [class.selected-stage]="stage.stage_id === selectedStageId"
             (click)="showSingleStageInfo(stage.stage_id)"
             style="cursor: pointer;"
@@ -95,18 +95,18 @@
               <div class="stage-heading">
                 <h4>Stage {{ i + 1 }}</h4>
                 <div class="action" (click)="$event.stopPropagation()">
-                  <button title="Copy Stage">
+                  <!--<button title="Copy Stage">
                     <i class="pi pi-copy"></i>
-                  </button>
+                  </button>-->
                   <button title="Delete Stage" (click)="removeStage(stage.stage_id)">
                     <i class="pi pi-trash"></i>
                   </button>
                 </div>
               </div>
               <div class="form" (click)="$event.stopPropagation()">
-                <input 
-                  type="text" 
-                  pInputText 
+                <input
+                  type="text"
+                  pInputText
                   placeholder="Enter stage name"
                   [(ngModel)]="stage.stage_name"
                   (ngModelChange)="onStageNameChange(stage)"
@@ -137,22 +137,22 @@
               </div>
             </div>
             <div class="action">
-              <button title="Copy Task">
+              <!--<button title="Copy Task">
                 <i class="pi pi-copy"></i>
-              </button>
+              </button>-->
               <button title="Delete Task" (click)="removeTask(j)">
                 <i class="pi pi-trash"></i>
               </button>
             </div>
           </div>
 
-          <div 
-            class="form-card parameters-list" 
+          <div
+            class="form-card parameters-list"
             *ngIf="task.parameters?.length"
             cdkDropList
             (cdkDropListDropped)="onParameterDrop($event, j)"
           >
-          {{task.parameters | json}}
+          <!-- {{task.parameters | json}} -->
             <div
               *ngFor="let form of task.parameters; let k = index"
               class="eachParamsWrpper"
@@ -250,7 +250,7 @@
             </button>
           </div>
         </div>
-        
+
         <div class="button-wrapper">
           <button class="add-new-task" (click)="addNewTask()">
             <i class="pi pi-plus-circle"></i> Add New Task
@@ -280,5 +280,5 @@
 
   <div class="branching-role" *ngIf="activeTab === 'BranchingRules'">
     <app-branching-rules [processId]="processId"></app-branching-rules>
-  </div>    
+  </div>
 </section>

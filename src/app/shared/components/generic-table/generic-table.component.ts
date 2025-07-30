@@ -127,7 +127,10 @@ export class GenericTableComponent {
   }
 
   triggerDeleteEvent(id: string) {
+    console.log('=== TRIGGER DELETE EVENT ===');
     console.log('Delete ID:', id);
+    console.log('Delete ID type:', typeof id);
+    console.log('Delete button status:', this.deleteButtonStatus);
     this.deleteEvent.emit(id);
   }
 
@@ -136,12 +139,12 @@ export class GenericTableComponent {
   }
 
   public getEntityId(tableEntryData: Entity, entityIdMapped: EntityIdMapping) {
-    console.log(tableEntryData);
-    console.log(entityIdMapped);
-    console.log(
-      tableEntryData[entityIdMapped as unknown as keyof Entity] as string
-    );
-    return tableEntryData[entityIdMapped as unknown as keyof Entity] as string;
+    console.log('=== GET ENTITY ID ===');
+    console.log('Table entry data:', tableEntryData);
+    console.log('Entity ID mapped:', entityIdMapped);
+    const entityId = tableEntryData[entityIdMapped as unknown as keyof Entity] as string;
+    console.log('Extracted entity ID:', entityId);
+    return entityId;
   }
 
   getCreationStatusSeverity(status: any): any {

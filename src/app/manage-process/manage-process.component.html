@@ -1,8 +1,8 @@
 <app-sidebar></app-sidebar>
 <app-header></app-header>
 <section class="user-main-content">
-  <!-- *ngIf="moduleAccess" -->
-  <div class="add-user-button">
+  <!-- Show Add Process button only for admin users -->
+  <div class="add-user-button" *ngIf="isAdmin">
     <p-button (onClick)="openAddProcessPage()" label="Add Process" />
   </div>
   <!-- [disabled]="!moduleAccess.data.addFlag"
@@ -13,12 +13,12 @@
     [genericTableData]="allProcessListData"
     [entityIdMapping]="entityIdMapping.Process"
     (editEvent)="editParticularData($event)"
+    (deleteEvent)="deleteParticularData($event)"
     (assignEvent)="assignProcessData($event)"
-    [editButtonStatus]="true"
-    [deleteButtonStatus]="true"
-    [assignButtonStatus]="true"
+    [editButtonStatus]="editButtonStatus"
+    [deleteButtonStatus]="deleteButtonStatus"
+    [assignButtonStatus]="assignButtonStatus"
   ></app-generic-table>
 
 
 </section>
-<!--  (deleteEvent)="deleteParticularData($event)" -->

@@ -66,7 +66,11 @@ export class StageCreationComponent {
 
   public holdCurrentStageId = '';
 
-  public stageWiseTaskList!: SingleStageTaskLIST;
+  public stageWiseTaskList: SingleStageTaskLIST = {
+    stat: 200,
+    msg: 'Initialized',
+    data: []
+  };
 
   @Input() public processId = '';
 
@@ -134,7 +138,7 @@ export class StageCreationComponent {
     const newStageId = stages.length + 1;
 
     if (newStageId) {
-      const newStage = { 
+      const newStage = {
         process_id: this.processId,
         stage_name: `Stage ${newStageId}`,
         // stageDescription: `Description for Stage ${newStageId}`,
@@ -163,11 +167,42 @@ export class StageCreationComponent {
   }
 
   removeStage(stageId: any) {
-    const stages = this.processCreationData.data.stages;
-    if (stages?.length)
-      this.processCreationData.data.stages = stages.filter(
-        (stage) => stage.stage_id !== stageId
-      );
+    console.log('=== REMOVE STAGE CALLED ===');
+    console.log('Stage ID:', stageId);
+
+    // Call the delete API directly without confirmation
+    this.processExecutionService.deleteStage(stageId).subscribe({
+      next: (response) => {
+        console.log('Delete stage API response:', response);
+        if (response && response.stat === 200) {
+          // Remove from local state
+          const stages = this.processCreationData.data.stages;
+          if (stages?.length) {
+            this.processCreationData.data.stages = stages.filter(
+              (stage) => stage.stage_id !== stageId
+            );
+          }
+
+          // If the deleted stage was selected, clear the selection
+          if (this.selectedStageId === stageId) {
+            this.selectedStageId = '';
+            this.stageWiseTaskList = {
+              stat: 200,
+              msg: 'Stage cleared',
+              data: []
+            };
+          }
+
+          this.toasterService.successToast('Stage deleted successfully!');
+        } else {
+          this.toasterService.errorToast(response?.msg || 'Failed to delete stage.');
+        }
+      },
+              error: (error: any) => {
+          console.error('Error deleting stage:', error);
+          this.toasterService.errorToast('Error deleting stage. Please try again.');
+        }
+    });
   }
 
   addNewTask() {
@@ -190,17 +225,79 @@ export class StageCreationComponent {
   }
 
   removeTask(taskIndex: number) {
+    console.log('=== REMOVE TASK CALLED ===');
+    console.log('Task index:', taskIndex);
+
     if (this.stageWiseTaskList?.data?.length > taskIndex) {
-      this.stageWiseTaskList.data.splice(taskIndex, 1);
-      this.toasterService.successToast('Task Removed');
+      const task = this.stageWiseTaskList.data[taskIndex];
+      console.log('Task to delete:', task);
+
+      if (task.task_id) {
+        // Call the delete API directly without confirmation
+        this.processExecutionService.deleteTask(task.task_id).subscribe({
+          next: (response) => {
+            console.log('Delete task API response:', response);
+            if (response && response.stat === 200) {
+              // Remove from local state
+              this.stageWiseTaskList.data.splice(taskIndex, 1);
+              this.toasterService.successToast('Task deleted successfully!');
+            } else {
+              this.toasterService.errorToast(response?.msg || 'Failed to delete task.');
+            }
+          },
+                      error: (error: any) => {
+              console.error('Error deleting task:', error);
+              this.toasterService.errorToast('Error deleting task. Please try again.');
+            }
+        });
+      } else {
+        // For new tasks that haven't been saved yet, just remove from local state
+        this.stageWiseTaskList.data.splice(taskIndex, 1);
+        this.toasterService.successToast('Task Removed');
+      }
     }
   }
 
   removeForm(taskIndex: number, formIndex: number) {
-    const task = this.stageWiseTaskList?.data[taskIndex];
+    console.log('=== REMOVE PARAMETER CALLED ===');
+    console.log('Task index:', taskIndex, 'Parameter index:', formIndex);
+
+        const task = this.stageWiseTaskList?.data[taskIndex];
     if (task?.parameters && task.parameters.length > formIndex) {
-      task.parameters.splice(formIndex, 1);
-      this.toasterService.successToast('Parameter Removed');
+      const parameter = task.parameters[formIndex];
+      console.log('Parameter to delete:', parameter);
+
+      if (parameter.parameter_id) {
+        // Parameter has been saved to database, delete it
+        console.log('Deleting parameter from database with ID:', parameter.parameter_id);
+
+        // Call the delete parameter API
+        this.processExecutionService.deleteParameter(parameter.parameter_id).subscribe({
+          next: (response) => {
+            console.log('Delete parameter API response:', response);
+            if (response && response.stat === 200) {
+              // Remove from local state
+              if (task.parameters) {
+                task.parameters.splice(formIndex, 1);
+              }
+              this.toasterService.successToast('Parameter deleted successfully!');
+            } else {
+              this.toasterService.errorToast(response?.msg || 'Failed to delete parameter.');
+            }
+          },
+          error: (error: any) => {
+            console.error('Error deleting parameter:', error);
+            this.toasterService.errorToast('Error deleting parameter. Please try again.');
+          }
+        });
+      } else {
+        // Parameter hasn't been saved yet, just remove from local state
+        console.log('Removing unsaved parameter from local state');
+        if (task.parameters) {
+          task.parameters.splice(formIndex, 1);
+        }
+        this.toasterService.successToast('Parameter Removed');
+      }
     }
   }
 
@@ -215,10 +312,13 @@ export class StageCreationComponent {
     });
     this.ref?.onClose.subscribe((formData: Parameter) => {
       if (formData) {
-        if (this.stageWiseTaskList && this.stageWiseTaskList.data[taskIndex] && !this.stageWiseTaskList.data[taskIndex].parameters) {
-          this.stageWiseTaskList.data[taskIndex].parameters = [];
+        const task = this.stageWiseTaskList?.data[taskIndex];
+        if (task && !task.parameters) {
+          task.parameters = [];
         }
-        this.stageWiseTaskList.data[taskIndex].parameters?.push(formData);
+        if (task?.parameters) {
+          task.parameters.push(formData);
+        }
         this.toasterService.successToast('Parameter added successfully');
       }
     });
@@ -230,8 +330,8 @@ export class StageCreationComponent {
       this.parameterValidationErrors.delete(parameter.parameter_id);
     }
 
-    const applicableValidationRules = this.allBranchingRules.filter(rule => 
-      rule.action_type === BranchingActionType.APPLY_VALIDATION && 
+    const applicableValidationRules = this.allBranchingRules.filter(rule =>
+      rule.action_type === BranchingActionType.APPLY_VALIDATION &&
       rule.parameter_id === parameter.parameter_id
     );
 
@@ -270,9 +370,10 @@ export class StageCreationComponent {
   }
 
   onParameterDrop(event: CdkDragDrop<Parameter[]>, taskIndex: number) {
-    if (this.stageWiseTaskList?.data[taskIndex]?.parameters) {
+    const task = this.stageWiseTaskList?.data[taskIndex];
+    if (task?.parameters) {
       moveItemInArray(
-        this.stageWiseTaskList.data[taskIndex].parameters,
+        task.parameters,
         event.previousIndex,
         event.currentIndex
       );

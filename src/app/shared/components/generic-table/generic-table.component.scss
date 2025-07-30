@@ -3,6 +3,25 @@
   gap: 10px;
   cursor: pointer;
 }
+
+.icon-wrapper i {
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.icon-wrapper i:hover {
+  background-color: #f0f0f0;
+}
+
+/*.icon-wrapper .pi-trash {
+  color: #dc3545;
+}*/
+
+.icon-wrapper .pi-trash:hover {
+  background-color: #f8d7da;
+}
 :host ::ng-deep .p-datatable {
   padding: 15px;
   border: 1px solid #ccc;

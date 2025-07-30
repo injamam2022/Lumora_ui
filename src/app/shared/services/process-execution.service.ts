@@ -280,4 +280,28 @@ export class ProcessExecutionService {
     // Use the index routing pattern that calls get_complete_form_data_data
     return this.baseHttpService.post<any>('General/get_complete_form_data', payload);
   }
+
+  public deleteProcess(processId: string): Observable<any> {
+    const payload = { process: { process_id: processId } };
+    console.log('Calling deleteProcess with payload:', payload);
+    return this.baseHttpService.post<any>('General/Delete', payload);
+  }
+
+  public deleteStage(stageId: string): Observable<any> {
+    const payload = { stage_id: stageId };
+    console.log('Calling deleteStage with payload:', payload);
+    return this.baseHttpService.post<any>('General/delete_stage', payload);
+  }
+
+  public deleteTask(taskId: string): Observable<any> {
+    const payload = { task_id: taskId };
+    console.log('Calling deleteTask with payload:', payload);
+    return this.baseHttpService.post<any>('General/delete_task', payload);
+  }
+
+  public deleteParameter(parameterId: string): Observable<any> {
+    const payload = { parameter_id: parameterId };
+    console.log('Calling deleteParameter with payload:', payload);
+    return this.baseHttpService.post<any>('General/delete_parameter', payload);
+  }
 }

@@ -22,6 +22,14 @@ export class PortableResourceService {
     });
   }
 
+  // Test method to check database connection
+  public testPortableResources(): Observable<any> {
+    console.log('=== TESTING PORTABLE RESOURCES ===');
+    console.log('Calling test endpoint');
+
+    return this.baseHttpService.post<any>('/General/test_portable_resources', {});
+  }
+
   public deletePortableResource(resourceId: string) {
     const payload = { portable_resource: { resource_id: resourceId } };
     return this.baseHttpService.post('/General/Delete', payload);
