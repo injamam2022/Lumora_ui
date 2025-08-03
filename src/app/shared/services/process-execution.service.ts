@@ -262,12 +262,73 @@ export class ProcessExecutionService {
   }
 
   public submitFormData(formData: any): Observable<any> {
-    return this.baseHttpService.post<any>('General/SaveFormSubmission', formData);
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    // Add user data to the form data
+    const payload = {
+      ...formData,
+      user_id: userId,
+      user_role: userRole
+    };
+
+    console.log('Submitting form with payload:', payload);
+    return this.baseHttpService.post<any>('General/SaveFormSubmission', payload);
   }
 
   public getParameterValues(processId: string): Observable<any> {
     const payload = { process_id: processId };
     return this.baseHttpService.post<any>('General/get_parameter_values', payload);
+  }
+
+  // Get form submission with workflow data
+  public getFormSubmissionWithWorkflow(processId: string): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      process_id: processId,
+      user_id: userId,
+      user_role: userRole
+    };
+    return this.baseHttpService.post<any>('General/GetFormSubmissionWithWorkflow', payload);
+  }
+
+  // Update workflow status
+  public updateWorkflowStatus(submissionId: string, newStatus: string, comment?: string): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      submission_id: submissionId,
+      new_status: newStatus,
+      comment: comment || '',
+      user_id: userId,
+      user_role: userRole
+    };
+    return this.baseHttpService.post<any>('General/UpdateWorkflowStatus', payload);
+  }
+
+  // Assign form to operator
+  public assignFormToOperator(submissionId: string, operatorId: string): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      submission_id: submissionId,
+      operator_id: operatorId,
+      user_id: userId,
+      user_role: userRole
+    };
+    return this.baseHttpService.post<any>('General/AssignFormToOperator', payload);
   }
 
   public getFormSubmissions(payload: any): Observable<any> {
@@ -303,5 +364,51 @@ export class ProcessExecutionService {
     const payload = { parameter_id: parameterId };
     console.log('Calling deleteParameter with payload:', payload);
     return this.baseHttpService.post<any>('General/delete_parameter', payload);
+  }
+
+  // Get workflow rules for a specific status
+  public getWorkflowRules(currentStatus: string): Observable<any> {
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      current_status: currentStatus,
+      user_id: userId,
+      user_role: userRole
+    };
+
+    return this.baseHttpService.post<any>(`General/GetWorkflowRules`, payload);
+  }
+
+  // Validate workflow transition
+  public validateWorkflowTransition(currentStatus: string, newStatus: string): Observable<any> {
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      current_status: currentStatus,
+      new_status: newStatus,
+      user_id: userId,
+      user_role: userRole
+    };
+
+    return this.baseHttpService.post<any>(`General/ValidateWorkflowTransition`, payload);
+  }
+
+  // Debug user role and form status
+  public debugUserRole(processId: string): Observable<any> {
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      process_id: processId,
+      user_id: userId,
+      user_role: userRole
+    };
+
+    return this.baseHttpService.post<any>(`General/DebugUserRole`, payload);
   }
 }

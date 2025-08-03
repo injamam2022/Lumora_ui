@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ButtonModule } from 'primeng/button';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { FacilityService } from '../facility/service/facility.service';
 import { DepartmentService } from '../department/services/department.service';
 import { RoomService } from '../room/services/room.service';
@@ -20,6 +22,7 @@ import { Department } from '../department/interface/department.interface';
 import { Room } from '../room/interface/room.interface';
 import { Material } from '../material/interface/material.interface';
 import { PortableResource } from '../portable-resource/interface/portable-resource.interface';
+import { WorkflowResponse, FormComment } from '../shared/interface/workflow.interface';
 
 @Component({
   selector: 'app-make-forms-entry',
@@ -31,7 +34,9 @@ import { PortableResource } from '../portable-resource/interface/portable-resour
     FormsModule,
     RouterModule,
     DropdownModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ButtonModule,
+    InputTextareaModule
   ],
   templateUrl: './make-forms-entry.component.html',
   styleUrl: './make-forms-entry.component.scss'
@@ -75,6 +80,17 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
   // Resource time tracking
   resourceTimeData: { [key: string]: any } = {};
 
+  // Workflow properties
+  public workflowData: WorkflowResponse | null = null;
+  public isFormEditable: boolean = false;
+  public canSubmit: boolean = false;
+  public canReview: boolean = false;
+  public currentStatus: string = '';
+  public userRole: number = 1;
+  public comments: FormComment[] = [];
+  public newComment: string = '';
+  public hasBeenRejected: boolean = false;
+
   public constructor(
     public processExecutionService: ProcessExecutionService,
     public dialogService: DialogService,
@@ -87,16 +103,317 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    console.log('=== COMPONENT INITIALIZED ===');
-    console.log('Process ID from input:', this.processId);
+    // Load workflow data first
+    this.loadWorkflowData();
 
+    // Load process data
     this.loadProcessData();
+
+    // Load dropdown data
     this.loadDropdownData();
-    this.startTimerUpdates();
+
+    // Load portable resources on initialization
+    this.loadPortableResources();
   }
 
   ngOnDestroy() {
     this.stopTimerUpdates();
+  }
+
+  // Load workflow data
+  loadWorkflowData() {
+    if (!this.processId) return;
+
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    this.processExecutionService.getFormSubmissionWithWorkflow(this.processId).subscribe({
+      next: (response: WorkflowResponse) => {
+        if (response.stat === 200) {
+          this.workflowData = response;
+          this.isFormEditable = response.editable;
+          this.canSubmit = response.can_submit;
+          this.canReview = response.can_review;
+          this.currentStatus = response.status ? response.status.trim().toLowerCase() : '';
+          this.userRole = response.user_role;
+          this.comments = response.comments || [];
+          this.hasBeenRejected = (response as any).has_been_rejected || false;
+
+          // Set portable resources from workflow data if available
+          if (response.data?.portable_resources && Array.isArray(response.data.portable_resources) && response.data.portable_resources.length > 0) {
+            this.selectedPortableResources = response.data.portable_resources as PortableResource[];
+            this.initializePortableResourceActivities();
+          }
+
+          // Get user role from localStorage for proper role detection
+          const userData = localStorage.getItem('userData');
+          const localStorageRole = userData ? JSON.parse(userData).role_id : 1;
+          this.userRole = parseInt(localStorageRole.toString());
+
+          // Reload portable resources if room is selected and form is editable
+          if (this.selectedRoom && this.isFormEditable) {
+            this.loadPortableResources();
+          }
+
+          // Fallback: Always reload portable resources if room is selected
+          if (this.selectedRoom && this.allPortableResources.length === 0) {
+            this.loadPortableResources();
+          }
+
+          // Start timer updates if portable resources are available
+          if (this.selectedPortableResources.length > 0 || (this.workflowData?.data?.portable_resources && this.workflowData.data.portable_resources.length > 0)) {
+            this.startTimerUpdates();
+          }
+
+          // Auto-start work for role 8 users when status is 'assigned'
+          if (this.userRole == 8 && this.currentStatus === 'assigned' && this.isFormEditable) {
+            this.startWork();
+          }
+
+          // Reload portable resources if room is selected
+          if (this.selectedRoom) {
+            this.loadPortableResources();
+          }
+
+          // Check for any running timers and start updates if needed
+          this.checkAndStartTimerUpdates();
+        } else {
+          console.log('❌ No workflow data found for this process');
+          console.log('Response stat:', response.stat);
+          console.log('Response msg:', response.msg);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error loading workflow data:', error);
+      }
+    });
+  }
+
+  // Check for any running timers and start updates if needed
+  checkAndStartTimerUpdates() {
+    let hasRunningTimers = false;
+
+    // Check fixed resources
+    this.roomFixedResources.forEach((resource: any) => {
+      if (resource.activities?.start && !resource.activities?.stop) {
+        hasRunningTimers = true;
+      }
+    });
+
+    // Check portable resources
+    this.selectedPortableResources.forEach((resource: any) => {
+      if (resource.activities?.start && !resource.activities?.stop) {
+        hasRunningTimers = true;
+      }
+    });
+
+    // Check workflow data portable resources
+    if (this.workflowData?.data?.portable_resources && Array.isArray(this.workflowData.data.portable_resources)) {
+      this.workflowData.data.portable_resources.forEach((resource: any) => {
+        if (resource.activities?.start && !resource.activities?.stop) {
+          hasRunningTimers = true;
+        }
+      });
+    }
+
+    if (hasRunningTimers && !this.updateTimersInterval) {
+      this.startTimerUpdates();
+    }
+  }
+
+  // Update workflow status
+  updateWorkflowStatus(newStatus: string, comment?: string) {
+    if (!this.workflowData?.data.submission_id) {
+      this.toasterService.errorToast('No submission found to update');
+      return;
+    }
+
+    this.processExecutionService.updateWorkflowStatus(
+      this.workflowData.data.submission_id.toString(),
+      newStatus,
+      comment
+    ).subscribe({
+      next: (response) => {
+        if (newStatus === 'submitted') {
+          this.toasterService.successToast('Form submitted for review successfully!');
+        } else if (newStatus === 'approved') {
+          this.toasterService.successToast('Form approved and forwarded!');
+        } else if (newStatus === 'rejected') {
+          this.toasterService.errorToast('Form rejected and sent back for editing.');
+        }
+
+        // Reload workflow data to update permissions
+        this.loadWorkflowData();
+      },
+      error: (error) => {
+        console.error('❌ Error updating workflow status:', error);
+        this.toasterService.errorToast('Failed to update workflow status');
+      }
+    });
+  }
+
+
+
+
+
+  // Resubmit for review after fixing rejection issues
+  resubmitForReview() {
+    // Prevent submission if form is not editable or status is not in_progress
+    if (!this.isFormEditable) {
+      this.toasterService.errorToast('Form is not editable in its current status');
+      return;
+    }
+
+    if (this.currentStatus !== 'in_progress') {
+      this.toasterService.errorToast('Form can only be submitted when status is in progress');
+      return;
+    }
+
+    // First save the form data
+    this.submitForm();
+
+    // Then update workflow status to submitted
+    if (this.workflowData?.data.submission_id) {
+      this.updateWorkflowStatus('submitted', 'Form resubmitted for review by operator');
+    }
+  }
+
+  // Submit for review
+  submitForReview() {
+    // Prevent submission if form is not editable or status is not in_progress
+    if (!this.isFormEditable) {
+      this.toasterService.errorToast('Form is not editable in its current status');
+      return;
+    }
+
+    if (this.currentStatus !== 'in_progress') {
+      this.toasterService.errorToast('Form can only be submitted when status is in progress');
+      return;
+    }
+
+    // First save the form data
+    this.submitForm();
+
+    // Then update workflow status to submitted
+    if (this.workflowData?.data.submission_id) {
+      this.updateWorkflowStatus('submitted', 'Form submitted for review by operator');
+    }
+  }
+
+  // Submit form with workflow
+  submitFormWithWorkflow() {
+    if (!this.canSubmit) {
+      this.toasterService.errorToast('You are not authorized to submit this form');
+      return;
+    }
+
+    // First submit the form data
+    this.submitForm();
+
+    // Then update workflow status to submitted
+    setTimeout(() => {
+      this.updateWorkflowStatus('submitted');
+    }, 1000);
+  }
+
+  // Accept form and forward to next step
+  acceptForm() {
+    if (!this.workflowData?.data.submission_id) {
+      this.toasterService.errorToast('No submission found to accept');
+      return;
+    }
+
+    const comment = this.newComment || 'Form accepted and forwarded to next step';
+
+    this.processExecutionService.updateWorkflowStatus(
+      this.workflowData.data.submission_id.toString(),
+      'approved',
+      comment
+    ).subscribe({
+      next: (response) => {
+        if (response.stat === 200) {
+          this.toasterService.successToast('Form accepted and forwarded successfully');
+
+          // Clear comment
+          this.newComment = '';
+
+          // Reload workflow data to reflect the new status
+          setTimeout(() => {
+            this.loadWorkflowData();
+          }, 500);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Error accepting form');
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error accepting form:', error);
+        this.toasterService.errorToast('Error accepting form');
+      }
+    });
+  }
+
+  // Approve form (existing method)
+  approveForm() {
+    if (!this.canReview) {
+      this.toasterService.errorToast('You are not authorized to approve this form');
+      return;
+    }
+
+    this.updateWorkflowStatus('approved', this.newComment);
+    this.newComment = '';
+  }
+
+  // Reject form and send back to role 8 for editing
+  rejectForm() {
+    if (!this.workflowData?.data.submission_id) {
+      this.toasterService.errorToast('No submission found to reject');
+      return;
+    }
+
+    if (!this.newComment.trim()) {
+      this.toasterService.errorToast('Please provide a comment when rejecting a form');
+      return;
+    }
+
+    const comment = this.newComment || 'Form rejected - needs revision';
+
+    this.processExecutionService.updateWorkflowStatus(
+      this.workflowData.data.submission_id.toString(),
+      'rejected',
+      comment
+    ).subscribe({
+      next: (response) => {
+        if (response.stat === 200) {
+          this.toasterService.successToast('Form rejected and sent back to operator for editing');
+
+          // Clear comment
+          this.newComment = '';
+
+          // Reload workflow data to reflect the new status
+          setTimeout(() => {
+            this.loadWorkflowData();
+          }, 500);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Error rejecting form');
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error rejecting form:', error);
+        this.toasterService.errorToast('Error rejecting form');
+      }
+    });
+  }
+
+  // Start work (change status to in_progress)
+  startWork() {
+    this.updateWorkflowStatus('in_progress');
+
+    // Reload workflow data after a short delay to reflect the new status
+    setTimeout(() => {
+      this.loadWorkflowData();
+    }, 1000);
   }
 
     loadProcessData() {
@@ -104,46 +421,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     .getSingleProcessExecution(this.processId)
     .subscribe((response) => {
       this.processData = response.data;
-        console.log('Process data loaded:', this.processData);
-
-        // Debug: Check for duplicate tasks and parameters
-        if (this.processData && this.processData.stages) {
-          this.processData.stages.forEach((stage: any, stageIndex: number) => {
-            console.log(`Stage ${stageIndex}: ${stage.stage_name}`);
-            if (stage.tasks) {
-              const taskIds = stage.tasks.map((task: any) => task.task_id);
-              const uniqueTaskIds = [...new Set(taskIds)];
-              if (taskIds.length !== uniqueTaskIds.length) {
-                console.warn(`Duplicate tasks found in stage ${stage.stage_name}:`, taskIds);
-                // Remove duplicates
-                const seen = new Set();
-                stage.tasks = stage.tasks.filter((task: any) => {
-                  const duplicate = seen.has(task.task_id);
-                  seen.add(task.task_id);
-                  return !duplicate;
-                });
-              }
-              stage.tasks.forEach((task: any, taskIndex: number) => {
-                console.log(`  Task ${taskIndex}: ${task.task_name} (ID: ${task.task_id})`);
-                if (task.parameters) {
-                  const paramIds = task.parameters.map((param: any) => param.parameter_id);
-                  const uniqueParamIds = [...new Set(paramIds)];
-                  if (paramIds.length !== uniqueParamIds.length) {
-                    console.warn(`    Duplicate parameters found in task ${task.task_name}:`, paramIds);
-                    // Remove duplicates
-                    const seen = new Set();
-                    task.parameters = task.parameters.filter((param: any) => {
-                      const duplicate = seen.has(param.parameter_id);
-                      seen.add(param.parameter_id);
-                      return !duplicate;
-                    });
-                  }
-                }
-              });
-            }
-          });
-                }
-      });
+        });
   }
 
   loadDropdownData() {
@@ -152,9 +430,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
     const checkAllDropdownsLoaded = () => {
       dropdownsLoaded++;
-      console.log(`Dropdown loaded: ${dropdownsLoaded}/${totalDropdowns}`);
       if (dropdownsLoaded === totalDropdowns) {
-        console.log('All dropdowns loaded, now loading form data...');
         // All dropdowns loaded, now load form data
         this.loadParameterValues();
       }
@@ -218,6 +494,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
   onRoomChange() {
     if (this.selectedRoom) {
+
       // Load fixed resources for the selected room
       this.roomService.getRoomWithResourcesSpecific({ room_id: this.selectedRoom.room_id }).subscribe((response: any) => {
         if (response.stat === 200 && response.data) {
@@ -233,6 +510,9 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
               };
             }
           });
+
+          // Check for running timers after loading fixed resources
+          this.checkAndStartTimerUpdates();
         } else {
           this.roomFixedResources = [];
         }
@@ -252,34 +532,21 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
   // Load portable resources
   loadPortableResources() {
-    console.log('=== LOADING PORTABLE RESOURCES ===');
     this.portableResourceService.getAllPortableResources().subscribe((response) => {
-      console.log('=== PORTABLE RESOURCES DEBUG ===');
-      console.log('Portable Resources API Response:', response);
-      console.log('Response status:', response.stat);
-      console.log('Response message:', response.msg);
-      console.log('Response all_list:', response.all_list);
-      console.log('Response all_list type:', typeof response.all_list);
-      console.log('Response all_list length:', response.all_list?.length);
 
       if (response.stat === 200) {
-        this.allPortableResources = response.all_list;
+        this.allPortableResources = response.all_list || [];
         this.initializePortableResourceActivities();
-        console.log('Loaded Portable Resources:', this.allPortableResources);
-        console.log('Portable Resources Count:', this.allPortableResources.length);
-        console.log('allPortableResources array:', this.allPortableResources);
+
+        // Check for running timers after loading resources
+        this.checkAndStartTimerUpdates();
       } else {
         console.error('Failed to load portable resources:', response.msg);
-        console.error('Response status:', response.stat);
+        this.allPortableResources = [];
       }
-      console.log('=== END PORTABLE RESOURCES DEBUG ===');
     }, (error) => {
-      console.error('=== PORTABLE RESOURCES ERROR ===');
       console.error('Error loading portable resources:', error);
-      console.error('Error details:', error.message);
-      console.error('Error status:', error.status);
-      console.error('Error response:', error.error);
-      console.error('=== END PORTABLE RESOURCES ERROR ===');
+      this.allPortableResources = [];
     });
   }
 
@@ -325,7 +592,18 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
   }
 
   submitForm() {
-    console.log('=== SUBMITTING FORM ===');
+    // Prevent submission if form is not editable
+    if (!this.isFormEditable) {
+      this.toasterService.errorToast('Form is not editable in its current status');
+      return;
+    }
+
+    // Prevent submission for role 8 if status is submitted or approved
+    if (this.userRole === 8 && (this.currentStatus === 'submitted' || this.currentStatus === 'approved' || this.currentStatus === 'under_review')) {
+      this.toasterService.errorToast('You cannot submit this form in its current status');
+      return;
+    }
+
     console.log('Process ID:', this.processId);
     console.log('Selected facility:', this.selectedFacility);
     console.log('Selected department:', this.selectedDepartment);
@@ -385,14 +663,12 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       parameter_values: parameterValues
     };
 
-    console.log('Submitting form data:', submissionData);
-    console.log('Parameter values to save:', parameterValues);
-
     this.processExecutionService.submitFormData(submissionData).subscribe({
       next: (response) => {
         if (response.stat === 200) {
           this.toasterService.successToast('Form submitted successfully');
-          // Optionally navigate to a success page or reset form
+          // Reload workflow data to reflect changes
+          this.loadWorkflowData();
         } else {
           this.toasterService.errorToast(response.msg || 'Failed to submit form');
         }
@@ -446,6 +722,11 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
         timer.pausedTime = 0;
         timer.totalElapsed = 0;
         timer.accumulatedTime = 0;
+
+        // Start timer updates immediately when timer starts
+        if (!this.updateTimersInterval) {
+          this.startTimerUpdates();
+        }
 
         // Initialize resource time data
         this.resourceTimeData[resourceKey] = {
@@ -519,12 +800,16 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
           resource.activities.resume = true;
           resource.activities.pause = false;
 
-          // Always resume from the accumulated time, regardless of timer state
+          // Resume from the accumulated time
           timer.startTime = Date.now();
           timer.isRunning = true;
           timer.isPaused = false;
+          // Keep the accumulated time, don't reset it
 
-          console.log(`Resuming timer for ${resourceKey} from accumulated time: ${timer.accumulatedTime}ms`);
+          // Start timer updates if not already running
+          if (!this.updateTimersInterval) {
+            this.startTimerUpdates();
+          }
 
           // Update resource time data
           if (this.resourceTimeData[resourceKey]) {
@@ -536,40 +821,40 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
         break;
     }
 
-    // Update digital clock display
+    // Update digital clock display immediately
     this.updateDigitalClock(resourceKey);
-
-    console.log('Activity updated:', activity, 'for resource:', resourceKey);
-    console.log('Is portable resource:', this.isPortableResource(resource));
-    console.log('Resource type:', this.isPortableResource(resource) ? 'portable' : 'fixed');
-    console.log('Timer state:', timer);
-    console.log('Resource time data:', this.resourceTimeData);
   }
 
   // Update digital clock display
   updateDigitalClock(resourceKey: string) {
-    const timer = this.clockTimers[resourceKey];
-    if (!timer) return;
-
-    let totalTime = 0;
-
-    if (timer.isRunning) {
-      // Timer is currently running - add current elapsed to accumulated time
-      const currentElapsed = Date.now() - timer.startTime;
-      totalTime = timer.accumulatedTime + currentElapsed;
-    } else if (timer.isPaused) {
-      // Timer is paused, show accumulated time
-      totalTime = timer.accumulatedTime;
-    } else if (timer.totalElapsed > 0) {
-      // Timer has been stopped, show final time
-      totalTime = timer.totalElapsed;
+    if (!this.clockTimers[resourceKey]) {
+      this.clockTimers[resourceKey] = {
+        startTime: null,
+        pausedTime: 0,
+        isRunning: false,
+        isPaused: false,
+        totalElapsed: 0,
+        accumulatedTime: 0
+      };
     }
 
-    this.digitalClocks[resourceKey] = this.formatTime(totalTime);
+    const timer = this.clockTimers[resourceKey];
 
-    // Debug logging for resume functionality
     if (timer.isRunning) {
-      console.log(`Digital clock update for ${resourceKey}: running, accumulated=${timer.accumulatedTime}ms, current=${Date.now() - timer.startTime}ms, total=${totalTime}ms`);
+      const currentTime = Date.now();
+      const currentElapsed = currentTime - timer.startTime;
+      const totalElapsed = timer.accumulatedTime + currentElapsed;
+      const formattedTime = this.formatTime(totalElapsed);
+      this.digitalClocks[resourceKey] = formattedTime;
+    } else if (timer.isPaused) {
+      // Show accumulated time when paused
+      const formattedTime = this.formatTime(timer.accumulatedTime);
+      this.digitalClocks[resourceKey] = formattedTime;
+    } else if (timer.totalElapsed > 0) {
+      const formattedTime = this.formatTime(timer.totalElapsed);
+      this.digitalClocks[resourceKey] = formattedTime;
+    } else {
+      this.digitalClocks[resourceKey] = '00:00:00';
     }
   }
 
@@ -658,7 +943,6 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     // Load previously saved parameter values
   loadParameterValues() {
     if (!this.processId) {
-      console.log('No process ID available for loading parameter values');
       return;
     }
 
@@ -675,15 +959,10 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       }
     };
 
-    console.log('Checking existing submissions with payload:', payload);
     this.processExecutionService.getFormSubmissions(payload).subscribe({
       next: (response: any) => {
-        console.log('Form submissions response:', response);
         if (response.stat === 200 && response.all_list && response.all_list.length > 0) {
-          console.log('Found existing submissions, loading parameter values...');
           this.loadSavedParameterValues();
-        } else {
-          console.log('No existing submissions found for this process');
         }
       },
       error: (error: any) => {
@@ -694,167 +973,110 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
         // Load saved parameter values from the database
   loadSavedParameterValues() {
-    console.log('=== LOADING SAVED PARAMETER VALUES ===');
-    console.log('Process ID:', this.processId);
-    console.log('Process ID type:', typeof this.processId);
-
     this.processExecutionService.getCompleteFormData(this.processId).subscribe({
       next: (response) => {
-        console.log('=== RESPONSE RECEIVED ===');
-        console.log('Response:', response);
 
         if (response.stat === 200 && response.data) {
-          console.log('Loaded complete form data:', response.data);
 
           // Load static fields
           if (response.data.static_fields) {
             const staticFields = response.data.static_fields;
-            console.log('Loading static fields:', staticFields);
-            console.log('Available facilities count:', this.facilities.length);
-            console.log('Available departments count:', this.departments.length);
-            console.log('Available rooms count:', this.rooms.length);
-            console.log('Available materials count:', this.materials.length);
 
             // Set facility
             if (staticFields.facility_id) {
-              console.log('Looking for facility_id:', staticFields.facility_id);
-              console.log('Available facilities:', this.facilities);
-              console.log('Facility IDs available:', this.facilities.map(f => f.facility_id));
                             this.selectedFacility = this.facilities.find(f =>
                 String(f.facility_id) === String(staticFields.facility_id)
               ) || null;
-              console.log('Set facility:', this.selectedFacility);
 
               if (!this.selectedFacility) {
                 console.warn('⚠️ Facility not found! Looking for ID:', staticFields.facility_id);
-                console.warn('Available facility IDs:', this.facilities.map(f => f.facility_id));
               }
             }
 
             // Set department
             if (staticFields.department_id) {
-              console.log('Looking for department_id:', staticFields.department_id);
-              console.log('Available departments:', this.departments);
-              console.log('Department IDs available:', this.departments.map(d => d.department_id));
               this.selectedDepartment = this.departments.find(d =>
                 String(d.department_id) === String(staticFields.department_id)
               ) || null;
-              console.log('Set department:', this.selectedDepartment);
 
               if (!this.selectedDepartment) {
                 console.warn('⚠️ Department not found! Looking for ID:', staticFields.department_id);
-                console.warn('Available department IDs:', this.departments.map(d => d.department_id));
               }
             }
 
             // Set room
             if (staticFields.room_id) {
-              console.log('Looking for room_id:', staticFields.room_id);
-              console.log('Available rooms:', this.rooms);
-              console.log('Room IDs available:', this.rooms.map(r => r.room_id));
               this.selectedRoom = this.rooms.find(r =>
                 String(r.room_id) === String(staticFields.room_id)
               ) || null;
-              console.log('Set room:', this.selectedRoom);
 
               if (!this.selectedRoom) {
                 console.warn('⚠️ Room not found! Looking for ID:', staticFields.room_id);
-                console.warn('Available room IDs:', this.rooms.map(r => r.room_id));
               }
             }
 
             // Set material
             if (staticFields.material_id) {
-              console.log('Looking for material_id:', staticFields.material_id);
-              console.log('Available materials:', this.materials);
-              console.log('Material IDs available:', this.materials.map(m => m.product_id));
               this.selectedMaterial = this.materials.find(m =>
                 String(m.product_id) === String(staticFields.material_id)
               ) || null;
-              console.log('Set material:', this.selectedMaterial);
 
               if (!this.selectedMaterial) {
                 console.warn('⚠️ Material not found! Looking for ID:', staticFields.material_id);
-                console.warn('Available material IDs:', this.materials.map(m => m.product_id));
               }
             }
 
             // Set material description
             if (staticFields.material_description) {
               this.materialDescription = staticFields.material_description;
-              console.log('Set material description:', this.materialDescription);
             }
 
             // Load fixed resources
             if (staticFields.fixed_resources && Array.isArray(staticFields.fixed_resources)) {
               this.roomFixedResources = staticFields.fixed_resources;
-              console.log('Set fixed resources:', this.roomFixedResources);
             }
 
             // Load portable resources
             if (staticFields.portable_resources && Array.isArray(staticFields.portable_resources)) {
               this.selectedPortableResources = staticFields.portable_resources;
-              console.log('Set portable resources:', this.selectedPortableResources);
             }
 
-            // Summary of static fields loaded
-            console.log('=== STATIC FIELDS LOADED ===');
-            console.log('Facility:', this.selectedFacility?.location_name || 'Not found');
-            console.log('Department:', this.selectedDepartment?.department_name || 'Not found');
-            console.log('Room:', this.selectedRoom?.room_name || 'Not found');
-            console.log('Material:', this.selectedMaterial?.product_name || 'Not found');
-            console.log('Material Description:', this.materialDescription);
           }
 
                     // Load parameter values
           if (response.data.parameter_values) {
-            console.log('Loading parameter values:', response.data.parameter_values);
 
             // Populate formData with saved values
             for (const parameterId in response.data.parameter_values) {
               if (response.data.parameter_values.hasOwnProperty(parameterId)) {
                 this.formData[parameterId] = response.data.parameter_values[parameterId];
-                console.log(`Setting formData[${parameterId}] = ${response.data.parameter_values[parameterId]}`);
               }
             }
-          } else {
-            console.warn('⚠️ No parameter_values found in response');
           }
 
           // Also check form_data from the submission
           if (response.data.form_data) {
-            console.log('Loading form_data from submission:', response.data.form_data);
 
             // Populate formData with saved values from form_data
             for (const parameterId in response.data.form_data) {
               if (response.data.form_data.hasOwnProperty(parameterId)) {
                 this.formData[parameterId] = response.data.form_data[parameterId];
-                console.log(`Setting formData[${parameterId}] from form_data = ${response.data.form_data[parameterId]}`);
               }
             }
-          } else {
-            console.warn('⚠️ No form_data found in response');
           }
-
-          console.log('Form data populated with saved values:', this.formData);
-          console.log('Current formData keys:', Object.keys(this.formData));
 
           // Load resource time data
           if (response.data.resource_time_data && Array.isArray(response.data.resource_time_data)) {
             this.loadSavedResourceTimeData(response.data.resource_time_data);
-          } else {
-            console.warn('⚠️ No resource time data found in response');
           }
 
           // Check if the form fields are properly bound
           if (this.processData && this.processData.stages) {
-            console.log('=== CHECKING FORM FIELD BINDING ===');
             this.processData.stages.forEach((stage: any) => {
               if (stage.tasks) {
                 stage.tasks.forEach((task: any) => {
                   if (task.parameters) {
                     task.parameters.forEach((param: any) => {
-                      console.log(`Parameter ${param.parameter_id}: ${param.parameter_name} = ${this.formData[param.parameter_id]}`);
                       if (!this.formData[param.parameter_id]) {
                         console.warn(`⚠️ Parameter ${param.parameter_id} (${param.parameter_name}) has no value in formData`);
                       }
@@ -867,7 +1089,6 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
           // Force change detection to update the form
           setTimeout(() => {
-            console.log('Form should now be updated with loaded values');
           }, 100);
 
           this.toasterService.successToast('Previous form values loaded successfully!');
@@ -893,11 +1114,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
   // Load saved resource time data and restore timer states
   loadSavedResourceTimeData(resourceTimeData: any[]) {
-    console.log('=== LOADING SAVED RESOURCE TIME DATA ===');
-    console.log('Resource time data:', resourceTimeData);
-
     if (!resourceTimeData || resourceTimeData.length === 0) {
-      console.warn('No resource time data to load');
       return;
     }
 
@@ -912,13 +1129,9 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       resourceGroups[resourceKey].push(timeEntry);
     });
 
-    console.log('Resource groups:', resourceGroups);
-
     // Process each resource's time data
     Object.keys(resourceGroups).forEach(resourceKey => {
       const timeEntries = resourceGroups[resourceKey];
-      console.log(`Processing resource: ${resourceKey}`);
-      console.log('Time entries:', timeEntries);
 
       // Find the resource in our lists
       let resource: any = null;
@@ -936,11 +1149,8 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       }
 
       if (!resource) {
-        console.warn(`Resource not found: ${resourceKey}`);
         return;
       }
-
-      console.log(`Found resource:`, resource);
 
       // Initialize timer for this resource
       if (!this.clockTimers[resourceKey]) {
@@ -956,7 +1166,6 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
       // Find the last activity to determine current state
       const lastActivity = timeEntries[timeEntries.length - 1];
-      console.log(`Last activity for ${resourceKey}:`, lastActivity);
 
       // Initialize resource activities
       if (!resource.activities) {
@@ -998,7 +1207,6 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
       // Convert elapsed time from HH:MM:SS format back to milliseconds for display
       const elapsedTimeMs = this.convertTimeFormatToMilliseconds(lastActivity.elapsed_time);
-      console.log(`Elapsed time for ${resourceKey}: ${lastActivity.elapsed_time} -> ${elapsedTimeMs}ms`);
 
       // Set timer state
       const timer = this.clockTimers[resourceKey];
@@ -1039,13 +1247,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
         elapsed_time: lastActivity.elapsed_time,
         user_id: lastActivity.user_id || 1
       };
-
-      console.log(`Timer state for ${resourceKey}:`, timer);
-      console.log(`Digital clock for ${resourceKey}:`, this.digitalClocks[resourceKey]);
-      console.log(`Resource time data for ${resourceKey}:`, this.resourceTimeData[resourceKey]);
     });
-
-    console.log('=== RESOURCE TIME DATA LOADED ===');
 
     // Start timer updates if any resources are running
     this.startTimerUpdatesIfNeeded();
@@ -1070,7 +1272,6 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     });
 
     if (hasRunningTimers) {
-      console.log('Starting timer updates for running resources');
       this.startTimerUpdates();
     }
   }
@@ -1098,7 +1299,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
   private startTimerUpdates() {
     this.updateTimersInterval = setInterval(() => {
       this.updateTimerDisplay();
-    }, 100); // Update every 100ms
+    }, 1000); // Update every 1 second for better performance and responsiveness
   }
 
   private stopTimerUpdates() {
@@ -1127,10 +1328,17 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       this.updateDigitalClock(resourceKey);
     });
 
-    // Portable resources
-    this.selectedPortableResources.forEach((resource: any) => {
+    // Portable resources - check both selectedPortableResources and workflow data
+    const allPortableResources = [
+      ...this.selectedPortableResources,
+      ...(this.workflowData?.data?.portable_resources || [])
+    ];
+
+    allPortableResources.forEach((resource: any) => {
       const resourceKey = `${resource.resource_id}_${resource.resource_name}`;
       this.updateDigitalClock(resourceKey);
     });
   }
+
+
 }

@@ -2,6 +2,123 @@
 <app-header></app-header>
 
 <section class="user-main-content">
+  <!-- Workflow Status Section -->
+  <div class="workflow-status-section" *ngIf="workflowData">
+    <div class="status-badge" [ngClass]="'status-' + currentStatus">
+      STATUS: {{ currentStatus.toUpperCase() }}
+    </div>
+  </div>
+
+  <!-- Workflow Actions Section -->
+  <div class="workflow-actions-section" *ngIf="workflowData">
+    <!-- Operator Actions (Role 8) -->
+    <div class="operator-actions" *ngIf="userRole === 8">
+      <button
+        pButton
+        type="button"
+        label="Start Work"
+        class="p-button-primary"
+        (click)="startWork()"
+        *ngIf="currentStatus === 'assigned'"
+        style="margin: 5px;">
+      </button>
+
+      <button
+        pButton
+        type="button"
+        label="Save Form"
+        class="p-button-success"
+        (click)="submitForm()"
+        *ngIf="isFormEditable"
+        style="margin: 5px;">
+      </button>
+
+      <button
+        pButton
+        type="button"
+        label="Submit for Review"
+        class="p-button-info"
+        (click)="submitForReview()"
+        *ngIf="canSubmit && currentStatus === 'in_progress'"
+        style="margin: 5px;">
+      </button>
+
+      <button
+        pButton
+        type="button"
+        label="Resubmit for Review"
+        class="p-button-info"
+        (click)="resubmitForReview()"
+        *ngIf="canSubmit && currentStatus === 'rejected'"
+        style="margin: 5px;">
+      </button>
+    </div>
+
+    <!-- Reviewer Actions (Role 9) -->
+    <div class="reviewer-actions" *ngIf="userRole === 9">
+      <div class="review-section">
+        <textarea
+          pInputTextarea
+          [(ngModel)]="newComment"
+          placeholder="Add your comment here..."
+          rows="3"
+          class="comment-textarea"
+          style="width: 100%; margin-bottom: 10px;">
+        </textarea>
+
+        <button
+          pButton
+          type="button"
+          label="Accept & Forward"
+          class="p-button-success"
+          (click)="approveForm()"
+          *ngIf="canReview && currentStatus === 'submitted'"
+          style="margin: 5px;">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          label="Reject & Send Back"
+          class="p-button-danger"
+          (click)="rejectForm()"
+          *ngIf="canReview && currentStatus === 'submitted'"
+          style="margin: 5px;">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Messages -->
+  <div class="status-message status-message-submitted" *ngIf="userRole === 8 && currentStatus === 'submitted'">
+    <i class="pi pi-info-circle"></i>
+    Form submitted for review. You can no longer edit this form until it's returned for revision.
+  </div>
+
+  <div class="status-message status-message-approved" *ngIf="userRole === 8 && currentStatus === 'approved'">
+    <i class="pi pi-check-circle"></i>
+    Form has been approved. No further action required.
+  </div>
+
+  <div class="status-message status-message-readonly" *ngIf="userRole === 8 && !isFormEditable">
+    <i class="pi pi-lock"></i>
+    This form is currently read-only. You cannot make changes at this time.
+  </div>
+
+  <!-- Comments Section -->
+  <div class="comments-section" *ngIf="comments.length > 0">
+    <h3>Comments</h3>
+    <div class="comment-list">
+      <div class="comment-item" *ngFor="let comment of comments">
+        <div class="comment-header">
+          <span class="comment-author">{{ comment.user_role | titlecase }}</span>
+          <span class="comment-date">{{ comment.created_date | date:'short' }}</span>
+        </div>
+        <div class="comment-text">{{ comment.comment_text }}</div>
+      </div>
+    </div>
+  </div>
+
   <!-- New Static Fields Section -->
   <div class="static-fields-wrap" *ngIf="processData">
     <h2 class="section-heading">Process: {{ processData.process_name }}</h2>
@@ -20,7 +137,8 @@
             (onChange)="onFacilityChange()"
             [appendTo]="'body'"
             class="form-control"
-          ></p-dropdown>
+            [disabled]="!isFormEditable">
+          </p-dropdown>
         </div>
       </div>
 
@@ -36,7 +154,8 @@
             (onChange)="onDepartmentChange()"
             [appendTo]="'body'"
             class="form-control"
-          ></p-dropdown>
+            [disabled]="!isFormEditable">
+          </p-dropdown>
         </div>
       </div>
 
@@ -52,7 +171,8 @@
             (onChange)="onRoomChange()"
             [appendTo]="'body'"
             class="form-control"
-          ></p-dropdown>
+            [disabled]="!isFormEditable">
+          </p-dropdown>
         </div>
       </div>
     </div>
@@ -70,7 +190,8 @@
             (onChange)="onMaterialChange()"
             [appendTo]="'body'"
             class="form-control"
-          ></p-dropdown>
+            [disabled]="!isFormEditable">
+          </p-dropdown>
         </div>
       </div>
 
@@ -81,8 +202,8 @@
             class="form-control"
             [value]="materialDescription"
             readonly
-            placeholder="Material description will appear here"
-          ></textarea>
+            placeholder="Material description will appear here">
+          </textarea>
         </div>
       </div>
     </div>
@@ -184,6 +305,7 @@
           [appendTo]="'body'"
           class="resource-selection-dropdown"
           (onChange)="onPortableResourceSelectionChange()"
+          [disabled]="!isFormEditable"
         ></p-multiSelect>
       </div>
 
@@ -218,7 +340,7 @@
               <td>
                 <button class="activity-btn start-btn"
                         [class.active]="resource.activities?.start"
-                        [disabled]="resource.activities?.stop"
+                        [disabled]="resource.activities?.stop || !isFormEditable"
                         (click)="toggleActivity(resource, 'start')">
                   Start
                 </button>
@@ -226,7 +348,7 @@
               <td>
                 <button class="activity-btn stop-btn"
                         [class.active]="resource.activities?.stop"
-                        [disabled]="!resource.activities?.start"
+                        [disabled]="!resource.activities?.start || !isFormEditable"
                         (click)="toggleActivity(resource, 'stop')">
                   Stop
                 </button>
@@ -234,7 +356,7 @@
               <td>
                 <button class="activity-btn pause-btn"
                         [class.active]="resource.activities?.pause"
-                        [disabled]="!resource.activities?.start || resource.activities?.stop"
+                        [disabled]="!resource.activities?.start || resource.activities?.stop || !isFormEditable"
                         (click)="toggleActivity(resource, 'pause')">
                   Pause
                 </button>
@@ -242,7 +364,7 @@
               <td>
                 <button class="activity-btn resume-btn"
                         [class.active]="resource.activities?.resume"
-                        [disabled]="!resource.activities?.pause || resource.activities?.stop"
+                        [disabled]="!resource.activities?.pause || resource.activities?.stop || !isFormEditable"
                         (click)="toggleActivity(resource, 'resume')">
                   Resume
                 </button>
@@ -273,11 +395,11 @@
             <div class="form">
               <label>{{ param?.parameter_name }}</label>
               <ng-container [ngSwitch]="param?.parameter_type_id">
-                <input *ngSwitchCase="'1'" type="text" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" />
-                <textarea *ngSwitchCase="'2'" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name"></textarea>
-                <input *ngSwitchCase="'3'" type="date" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" />
-                <input *ngSwitchCase="'4'" type="number" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" />
-                <select *ngSwitchCase="'5'" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name">
+                <input *ngSwitchCase="'1'" type="text" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable" />
+                <textarea *ngSwitchCase="'2'" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable"></textarea>
+                <input *ngSwitchCase="'3'" type="date" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable" />
+                <input *ngSwitchCase="'4'" type="number" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable" />
+                <select *ngSwitchCase="'5'" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable">
                   <option *ngFor="let opt of param?.options" [value]="opt">{{ opt }}</option>
                 </select>
               </ng-container>
@@ -289,7 +411,7 @@
   </div>
 
   <!-- Submit Button -->
- <div class="form-submit-wrap">
-    <button type="submit" class="submit-btn" (click)="submitForm()">Submit</button>
-  </div>
+  <!--<div class="form-submit-wrap" *ngIf="canSubmit">
+    <button type="submit" class="submit-btn" (click)="submitForm()">Save Form</button>
+  </div>-->
 </section>

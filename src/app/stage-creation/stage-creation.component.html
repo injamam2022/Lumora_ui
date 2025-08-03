@@ -251,7 +251,7 @@
           </div>
         </div>
 
-        <div class="button-wrapper">
+        <div class="button-wrapper" *ngIf="selectedStageId && holdCurrentStageId">
           <button class="add-new-task" (click)="addNewTask()">
             <i class="pi pi-plus-circle"></i> Add New Task
           </button>
