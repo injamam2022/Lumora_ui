@@ -10,7 +10,7 @@ export enum EntityIdMapping {
   Process = 'process_id',
   Elogbook = 'elogs_id',
   Room = 'room_id',
-  FixedResource = 'fixed_resource_id',
-  PortableResource = 'portable_resource_id',
+  FixedResource = 'resource_id',
+  PortableResource = 'resource_id',
   Material = 'material_id'
 }

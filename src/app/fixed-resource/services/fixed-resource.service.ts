@@ -19,7 +19,7 @@ export class FixedResourceService {
 
   public deleteFixedResource(resourceId: string) {
     const payload = { fixed_resource: { resource_id: resourceId } };
-    return this.baseHttpService.post('/General/Delete', payload);
+    return this.baseHttpService.post('/General/Remove', payload);
   }
 
   public addFixedResource(resourceData: any) {

@@ -1,0 +1,44 @@
+<app-header></app-header>
+<app-details-section>
+  <section class="user-main-content">
+    <div class="resource-controls">
+      <div class="resource-type-selector">
+        <label for="resourceType">Resource Type:</label>
+        <p-dropdown
+          id="resourceType"
+          [options]="resourceTypes"
+          [(ngModel)]="selectedResourceType"
+          (onChange)="onResourceTypeChange()"
+          placeholder="Select Resource Type"
+          [style]="{'width': '200px'}"
+        ></p-dropdown>
+      </div>
+      <div class="add-user-button">
+        <p-button
+          label="Add Resource"
+          (onClick)="openAddResourceDialog()"
+        />
+      </div>
+    </div>
+                                                                               <app-generic-table
+         *ngIf="allFixedResourceData && selectedResourceType === 'fixed'"
+         [genericTableData]="allFixedResourceData"
+         [genericTableColumns]="genericTableColumns"
+         [entityIdMapping]="entityIdMapping"
+         [editButtonStatus]="editButtonStatus"
+         [deleteButtonStatus]="deleteButtonStatus"
+         (editEvent)="editParticularData($event)"
+         (deleteEvent)="deleteParticularData($event)"
+       ></app-generic-table>
+       <app-generic-table
+         *ngIf="allPortableResourceData && selectedResourceType === 'portable'"
+         [genericTableData]="allPortableResourceData"
+         [genericTableColumns]="genericTableColumns"
+         [entityIdMapping]="entityIdMapping"
+         [editButtonStatus]="editButtonStatus"
+         [deleteButtonStatus]="deleteButtonStatus"
+         (editEvent)="editParticularData($event)"
+         (deleteEvent)="deleteParticularData($event)"
+       ></app-generic-table>
+  </section>
+</app-details-section>

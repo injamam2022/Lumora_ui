@@ -1,0 +1,78 @@
+<div class="add-userwrapper">
+  <form #resourceCreationForm="ngForm" (ngSubmit)="addCreation()">
+    <div class="formgroup">
+      <p>Resource Category</p>
+      <p-dropdown
+        name="resourceCategory"
+        [options]="resourceCategories"
+        [(ngModel)]="selectedResourceCategory"
+        (onChange)="onResourceCategoryChange()"
+        placeholder="Select Resource Category"
+        [style]="{'width': '100%'}"
+        required
+      ></p-dropdown>
+    </div>
+    <div class="formgroup">
+      <p>Resource Name</p>
+      <input
+        type="text"
+        pInputText
+        name="resourceName"
+        [(ngModel)]="addResourcePayload.resourceName"
+        placeholder="Enter Resource Name"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Resource Type</p>
+      <input
+        type="text"
+        pInputText
+        name="resourceType"
+        [(ngModel)]="addResourcePayload.resourceType"
+        placeholder="Enter Resource Type"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Resource Code</p>
+      <input
+        type="text"
+        pInputText
+        name="resourceCode"
+        [(ngModel)]="addResourcePayload.resourceCode"
+        placeholder="Enter Resource Code"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Capacity Unit</p>
+      <input
+        type="text"
+        pInputText
+        name="capacityUnit"
+        [(ngModel)]="addResourcePayload.capacityUnit"
+        placeholder="Enter Capacity Unit"
+        required
+      />
+    </div>
+    <div class="formgroup">
+      <p>Capacity Quantity</p>
+      <input
+        type="number"
+        pInputText
+        name="capacityQuantity"
+        [(ngModel)]="addResourcePayload.capacityQuantity"
+        placeholder="Enter Capacity Quantity"
+        required
+      />
+    </div>
+    <div class="buttonwrap">
+      <p-button
+        type="submit"
+        [label]="purpose === 'add' ? 'Submit' : 'Update'"
+        [disabled]="resourceCreationForm.form.invalid || !selectedResourceCategory"
+      />
+    </div>
+  </form>
+</div>

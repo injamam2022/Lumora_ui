@@ -32,7 +32,7 @@ export class PortableResourceService {
 
   public deletePortableResource(resourceId: string) {
     const payload = { portable_resource: { resource_id: resourceId } };
-    return this.baseHttpService.post('/General/Delete', payload);
+    return this.baseHttpService.post('/General/Remove', payload);
   }
 
   public addPortableResource(resourceData: any) {

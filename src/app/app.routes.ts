@@ -28,6 +28,7 @@ import { OperatorDashboardComponent } from './operator-dashboard/operator-dashbo
 import { MakeFormsEntryComponent } from './make-forms-entry/make-forms-entry.component';
 import { PortableResourceComponent } from './portable-resource/portable-resource.component';
 import { MaterialComponent } from './material/material.component';
+import { ResourceManagementComponent } from './resource-management/resource-management.component';
 export const routes: Routes = [
   { path: '', component: LoginComponent },
   {
@@ -147,6 +148,16 @@ export const routes: Routes = [
   {
     path: 'manage-resource-room/:resource-room-id',
     component: ResourceRoomComponent,
+    canActivate: [],
+  },
+  {
+    path: 'resource-management',
+    component: ResourceManagementComponent,
+    canActivate: [],
+  },
+  {
+    path: 'resource-management/:resourceModuleId',
+    component: ResourceManagementComponent,
     canActivate: [],
   },
   {

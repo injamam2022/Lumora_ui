@@ -35,6 +35,9 @@ export class SidebarComponent {
       case 'User Access': return 'user-access';
       case 'Manage Process': return 'manage-process';
       case 'Manage Facility': return 'manage-facility';
+      case 'Fixed Resource': return 'fixed-resource';
+      case 'Portable Resource': return 'portable-resource';
+      case 'Resource Management': return 'resource-management';
       default: return '';
     }
   }
@@ -48,6 +51,9 @@ export class SidebarComponent {
       case 'User Access': return 'pi pi-key';
       case 'Manage Process': return 'pi pi-cog';
       case 'Manage Facility': return 'pi pi-building';
+      case 'Fixed Resource': return 'pi pi-box';
+      case 'Portable Resource': return 'pi pi-mobile';
+      case 'Resource Management': return 'pi pi-boxes';
       default: return 'pi pi-folder';
     }
   }
