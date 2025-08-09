@@ -16,14 +16,14 @@
 
     <!-- Operator Actions (Role 8) -->
     <div *ngIf="userRole === 8" class="operator-actions">
-      <!-- Start Work Button -->
+      <!-- Start Work Button
       <button
         *ngIf="currentStatus === 'assigned'"
         type="button"
         class="btn btn-primary"
         (click)="startWork()">
         <i class="fas fa-play"></i> Start Work
-      </button>
+      </button>-->
 
       <!-- Save Form Button -->
       <button
@@ -43,14 +43,14 @@
         <i class="fas fa-paper-plane"></i> Submit for Review
       </button>
 
-      <!-- Resubmit for Review Button -->
+      <!-- Resubmit for Review Button
       <button
         *ngIf="canSubmit && currentStatus === 'rejected'"
         type="button"
         class="btn btn-warning"
         (click)="resubmitForReview()">
         <i class="fas fa-redo"></i> Resubmit for Review
-      </button>
+      </button>-->
     </div>
 
     <!-- Reviewer Actions -->
@@ -284,7 +284,7 @@
               <td>
                 <button class="activity-btn start-btn"
                         [class.active]="resource.activities?.start"
-                        [disabled]="resource.activities?.stop"
+                        [disabled]="resource.activities?.stop || !isFormEditable"
                         (click)="toggleActivity(resource, 'start')">
                   Start
                 </button>
@@ -292,7 +292,7 @@
               <td>
                 <button class="activity-btn stop-btn"
                         [class.active]="resource.activities?.stop"
-                        [disabled]="!resource.activities?.start"
+                        [disabled]="!resource.activities?.start || !isFormEditable"
                         (click)="toggleActivity(resource, 'stop')">
                   Stop
                 </button>
@@ -300,7 +300,7 @@
               <td>
                 <button class="activity-btn pause-btn"
                         [class.active]="resource.activities?.pause"
-                        [disabled]="!resource.activities?.start || resource.activities?.stop"
+                        [disabled]="!resource.activities?.start || resource.activities?.stop || !isFormEditable"
                         (click)="toggleActivity(resource, 'pause')">
                   Pause
                 </button>
@@ -308,7 +308,7 @@
               <td>
                 <button class="activity-btn resume-btn"
                         [class.active]="resource.activities?.resume"
-                        [disabled]="!resource.activities?.pause || resource.activities?.stop"
+                        [disabled]="!resource.activities?.pause || resource.activities?.stop || !isFormEditable"
                         (click)="toggleActivity(resource, 'resume')">
                   Resume
                 </button>
@@ -337,6 +337,7 @@
           [options]="allPortableResources"
           [(ngModel)]="selectedPortableResources"
           optionLabel="resource_name"
+          [dataKey]="'resource_id'"
           placeholder="Select Portable Resources to display in table"
           [filter]="true"
           [appendTo]="'body'"
@@ -430,13 +431,13 @@
             <!--{{task?.parameters | json}}-->
           <div class="form-col" *ngFor="let param of task?.parameters; trackBy: trackByParameterId">
             <div class="form">
-              <label>{{ param?.parameter_name }}</label>
+              <label [attr.for]="'param-' + (param?.parameter_id || '')">{{ param?.parameter_name }}</label>
               <ng-container [ngSwitch]="param?.parameter_type_id">
-                <input *ngSwitchCase="'1'" type="text" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable" />
-                <textarea *ngSwitchCase="'2'" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable"></textarea>
-                <input *ngSwitchCase="'3'" type="date" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable" />
-                <input *ngSwitchCase="'4'" type="number" class="form-control" [placeholder]="param?.parameter_description" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable" />
-                <select *ngSwitchCase="'5'" class="form-control" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name" [disabled]="!isFormEditable">
+                <input *ngSwitchCase="'1'" type="text" class="form-control" [attr.id]="'param-' + (param?.parameter_id || '')" placeholder="{{ param?.parameter_description || ('Enter ' + (param?.parameter_name || '')) }}" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name || 'text'" [title]="param?.parameter_name || 'Text'" [disabled]="!isFormEditable" />
+                <textarea *ngSwitchCase="'2'" class="form-control" [attr.id]="'param-' + (param?.parameter_id || '')" placeholder="{{ param?.parameter_description || ('Enter ' + (param?.parameter_name || '')) }}" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name || 'textarea'" [title]="param?.parameter_name || 'Textarea'" [disabled]="!isFormEditable"></textarea>
+                <input *ngSwitchCase="'3'" type="date" class="form-control" [attr.id]="'param-' + (param?.parameter_id || '')" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name || 'date'" [title]="param?.parameter_name || 'Date'" placeholder="{{ param?.parameter_description || 'Select date' }}" [disabled]="!isFormEditable" />
+                <input *ngSwitchCase="'4'" type="number" class="form-control" [attr.id]="'param-' + (param?.parameter_id || '')" placeholder="{{ param?.parameter_description || ('Enter ' + (param?.parameter_name || '')) }}" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name || 'number'" [title]="param?.parameter_name || 'Number'" [disabled]="!isFormEditable" />
+                <select *ngSwitchCase="'5'" class="form-control" [attr.id]="'param-' + (param?.parameter_id || '')" [(ngModel)]="formData[param?.parameter_id || '']" [attr.aria-label]="param?.parameter_name || 'select'" title="Select option" [disabled]="!isFormEditable">
                   <option *ngFor="let opt of param?.options" [value]="opt">{{ opt }}</option>
                 </select>
               </ng-container>

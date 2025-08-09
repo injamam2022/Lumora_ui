@@ -147,7 +147,8 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       next: (response: WorkflowResponse) => {
         if (response.stat === 200) {
           this.workflowData = response;
-          this.isFormEditable = response.editable;
+          // Tentatively set by backend; will be recalculated after we read localStorage role below
+          this.isFormEditable = !!response.editable && this.userRole === 8;
           this.canSubmit = response.can_submit;
           this.canReview = response.can_review;
           this.currentStatus = response.status ? response.status.trim().toLowerCase() : '';
@@ -159,6 +160,8 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
           const userData = localStorage.getItem('userData');
           const localStorageRole = userData ? JSON.parse(userData).role_id : 1;
           this.userRole = parseInt(localStorageRole.toString());
+          // Re-evaluate editability based on final role from localStorage
+          this.isFormEditable = !!response.editable && this.userRole === 8;
 
           console.log('📥 Workflow data loaded:');
           console.log('  - Backend status:', response.status);
@@ -663,6 +666,14 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
         this.allPortableResources = response.all_list || [];
         this.initializePortableResourceActivities();
 
+        // Reconcile any already-selected portable resources with the latest option list
+        if (this.selectedPortableResources && this.selectedPortableResources.length > 0) {
+          this.selectedPortableResources = this.reconcileSelectedPortableResources(
+            this.selectedPortableResources,
+            this.allPortableResources
+          );
+        }
+
         // Check for running timers after loading resources
         this.checkAndStartTimerUpdates();
       } else {
@@ -716,6 +727,43 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Reconcile selected portable resources with option list by resource_id to avoid null labels
+  private reconcileSelectedPortableResources(selected: any[], options: any[]): any[] {
+    const byId: { [key: string]: any } = {};
+    options.forEach(opt => {
+      if (opt && (opt.resource_id !== undefined && opt.resource_id !== null)) {
+        byId[String(opt.resource_id)] = opt;
+      }
+    });
+
+    const reconciled: any[] = [];
+    selected.forEach(sel => {
+      const key = sel && (sel.resource_id !== undefined && sel.resource_id !== null)
+        ? String(sel.resource_id)
+        : undefined;
+      if (!key) {
+        return;
+      }
+      const match = byId[key];
+      if (match) {
+        // Preserve activities if present on the saved selection
+        if (sel.activities && !match.activities) {
+          match.activities = sel.activities;
+        }
+        reconciled.push(match);
+      } else {
+        // Fallback to a minimal object so UI doesn't render null
+        reconciled.push({
+          resource_id: sel.resource_id,
+          resource_name: sel.resource_name || 'Unknown',
+          activities: sel.activities || { start: false, stop: false, pause: false, resume: false }
+        });
+      }
+    });
+
+    return reconciled;
+  }
+
   submitForm() {
     // Prevent submission if form is not editable
     if (!this.isFormEditable) {
@@ -756,7 +804,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Process portable resources
+    // Process portable resources (ensure we only send minimal, non-circular shape)
     if (this.selectedPortableResources && this.selectedPortableResources.length > 0) {
       this.selectedPortableResources.forEach((resource: any) => {
         const resourceKey = `${resource.resource_id}_${resource.resource_name}`;
@@ -774,6 +822,13 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       }
     }
 
+    // Normalize portable_resources to avoid functions/complex objects leaking into JSON
+    const normalizedPortable = (this.selectedPortableResources || []).map((r: any) => ({
+      resource_id: r.resource_id,
+      resource_name: r.resource_name,
+      activities: r.activities || { start: false, stop: false, pause: false, resume: false }
+    }));
+
     const submissionData = {
       process_id: this.processId,
       facility_id: this.selectedFacility.facility_id,
@@ -782,7 +837,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       material_id: this.selectedMaterial.product_id,
       material_description: this.materialDescription,
       fixed_resources: this.roomFixedResources,
-      portable_resources: this.selectedPortableResources,
+      portable_resources: normalizedPortable,
       form_data: this.formData,
       resource_time_data: resourceTimeData,
       parameter_values: parameterValues
@@ -807,6 +862,11 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
   // Toggle activity for a resource
   toggleActivity(resource: any, activity: string) {
+    // Guard: Only role 8 (operator) can modify activities/timers
+    if (!this.isFormEditable) {
+      this.toasterService.errorToast('You cannot modify activities on this form');
+      return;
+    }
     if (!resource.activities) {
       resource.activities = {
         start: false,
@@ -1529,7 +1589,10 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
             this.shouldBeCurrentReviewer = false;
             console.log('✅ Role 8 user - not a reviewer, hiding approve/reject buttons');
           } else {
-            // For reviewers (roles 9, 10, 11, 12), handle current reviewer logic
+            // For reviewers (roles other than 8), always keep form non-editable
+            this.isFormEditable = false;
+
+            // Handle reviewer visibility/sequence while keeping view-only
             if (this.isAssignedReviewer) {
               console.log('🔍 User is assigned reviewer');
               console.log('🔍 Current reviewer ID from DB:', data.current_reviewer_id);
@@ -1556,14 +1619,9 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
                 this.isCurrentReviewer = false;
               }
 
-              // Enable form editing for current reviewer
-              if (this.isCurrentReviewer) {
-                this.isFormEditable = true;
-                console.log('✅ Current reviewer - enabling form editing');
-              } else {
-                this.isFormEditable = false;
-                console.log('❌ Not current reviewer - disabling form editing');
-              }
+              // Never enable editing for reviewers
+              this.isFormEditable = false;
+              console.log('ℹ️ Reviewers are view-only. Editing disabled.');
             } else {
               console.log('❌ User is not an assigned reviewer');
               this.isFormEditable = false;
