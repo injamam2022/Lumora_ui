@@ -76,7 +76,7 @@ export class BranchingRulesComponent {
   public stageWiseTaskList!: SingleStageTaskLIST;
 
   public taskWiseParameterList!: ParametersListDataResToTask;
- 
+
   public selectedParameterType: string | undefined;
 
   public ruleBlocks: RuleBlock[] = [];

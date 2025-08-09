@@ -98,22 +98,24 @@ export class AssignToRoleComponent {
   }
 
   public submitAllRoles() {
-    if (this.newRoles.length === 0) {
-      this.toasterService.successToast('No new roles to assign');
+    if (this.allListAssignedToWorkFlow.all_list.length === 0) {
+      this.toasterService.successToast('No roles to assign');
       return;
     }
 
-    const requests = this.newRoles.map((role) => {
+    // Process all roles (both new and existing) with correct step_order
+    const requests = this.allListAssignedToWorkFlow.all_list.map((role, index) => {
       const payload: AssignProcessToRole = {
         process_id: role.process_id,
         role_id: role.role_id,
+        step_order: (index + 1).toString() // Add step_order based on current array position
       };
       return this.processExecutionService.assIgnProcessToRole(payload);
     });
 
     forkJoin(requests).subscribe({
       next: () => {
-        this.toasterService.successToast('New roles assigned successfully');
+        this.toasterService.successToast('Workflow roles assigned successfully');
         this.ref.close();
       },
       error: (err) => {

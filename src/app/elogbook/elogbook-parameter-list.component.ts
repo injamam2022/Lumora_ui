@@ -6,7 +6,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DialogService, DynamicDialogRef, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { ParameterDialogComponent } from '../shared/components/parameter-management/parameter-dialog/parameter-dialog.component';
+import { AddParametersToStageComponent } from '../add-parameters-to-stage/add-parameters-to-stage.component';
 
 interface Parameter {
   parameter_id?: string;
@@ -50,7 +50,7 @@ export class ElogbookParameterListComponent {
   constructor(public dialogService: DialogService) {}
 
   addParameter() {
-    this.ref = this.dialogService.open(ParameterDialogComponent, {
+    this.ref = this.dialogService.open(AddParametersToStageComponent, {
       header: 'Add Parameters',
       width: '40%',
       contentStyle: { overflow: 'auto' },

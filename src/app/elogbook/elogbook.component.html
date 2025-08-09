@@ -13,8 +13,10 @@
     [entityIdMapping]="entityIdMapping.Elogbook"
     [editButtonStatus]="true"
     [deleteButtonStatus]="true"
+    [assignButtonStatus]="true"
     (editEvent)="editParticularData($event)"
     (deleteEvent)="deleteParticularData($event)"
+    (assignEvent)="assignElogbook($event)"
   ></app-generic-table>
 
 

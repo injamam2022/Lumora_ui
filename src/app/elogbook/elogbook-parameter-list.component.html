@@ -1,4 +1,4 @@
-<div class="form-card parameters-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+<div class="form-card parameters-list" *ngIf="(parameters && parameters.length) > 0" cdkDropList (cdkDropListDropped)="onDrop($event)">
   <div *ngFor="let param of parameters; let i = index" class="eachParamsWrpper" cdkDrag>
     <div class="parameter-header">
       <div class="drag-handle" cdkDragHandle>
@@ -21,7 +21,7 @@
           <input type="number" pInputText class="form-control" placeholder="Enter number" [(ngModel)]="param.parameter_description" />
         </div>
         <div class="form-wrap" *ngSwitchCase="'3'">
-          <input type="datetime-local" pInputText class="form-control" [(ngModel)]="param.parameter_description" />
+          <input type="datetime-local" pInputText class="form-control" title="Select date and time" [(ngModel)]="param.parameter_description" />
         </div>
         <div class="form-wrap" *ngSwitchCase="'5'">
           <div *ngFor="let opt of param.options!; let j = index" class="multi-option-wrap">
@@ -42,7 +42,7 @@
   </div>
 </div>
 <div class="button-wrap">
-  <button class="add-new-parameters" (click)="addParameter()">
+  <button class="add-new-parameters" (click)="addParameter()" title="Add Parameter">
     <i class="pi pi-plus-circle"></i> Add Parameter
   </button>
 </div>

@@ -1180,3 +1180,631 @@
   }
 }
 
+// Multi-user workflow styles
+.reviewer-actions {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+
+  .reviewer-info {
+    margin-bottom: 15px;
+
+    h4 {
+      color: #495057;
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .current-reviewer {
+      color: #28a745;
+      font-weight: 500;
+      margin: 5px 0;
+
+      i {
+        margin-right: 8px;
+      }
+    }
+
+    .waiting-reviewer {
+      color: #ffc107;
+      font-weight: 500;
+      margin: 5px 0;
+
+      i {
+        margin-right: 8px;
+      }
+    }
+
+    .fallback-reviewer {
+      color: #6c757d;
+      font-weight: 500;
+      margin: 5px 0;
+
+      i {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .comments-section {
+    margin-bottom: 15px;
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      padding: 10px;
+      font-size: 14px;
+      resize: vertical;
+
+      &:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .reviewer-buttons {
+    display: flex;
+    gap: 10px;
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &.btn-success {
+        background-color: #28a745;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #218838;
+        }
+
+        i {
+          margin-right: 5px;
+        }
+      }
+
+      &.btn-danger {
+        background-color: #dc3545;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #c82333;
+        }
+
+        i {
+          margin-right: 5px;
+        }
+      }
+
+      &.btn-info {
+        background-color: #17a2b8;
+        color: white;
+
+        &:hover {
+          background-color: #138496;
+        }
+
+        i {
+          margin-right: 5px;
+        }
+      }
+    }
+  }
+}
+
+.review-assignments {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+
+  h4 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .assignment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .assignment-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+
+    &.current {
+      border-color: #007bff;
+      background: #e3f2fd;
+      box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+    }
+
+    &.completed {
+      border-color: #28a745;
+      background: #d4edda;
+    }
+
+    &.pending {
+      border-color: #ffc107;
+      background: #fff3cd;
+    }
+
+    .sequence-number {
+      background: #007bff;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .reviewer-name {
+      flex: 1;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      margin-left: 10px;
+
+      &.approved {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      &.pending {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      &.in_progress {
+        background: #cce5ff;
+        color: #004085;
+      }
+
+      &.rejected {
+        background: #f8d7da;
+        color: #721c24;
+      }
+    }
+
+    .review-comment {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6c757d;
+      font-style: italic;
+      width: 100%;
+    }
+  }
+}
+
+// Admin actions styles
+.admin-actions {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &.btn-primary {
+      background-color: #2196f3;
+      color: white;
+
+      &:hover {
+        background-color: #1976d2;
+      }
+
+      i {
+        margin-right: 5px;
+      }
+    }
+
+    &.btn-warning {
+      background-color: #ff9800;
+      color: white;
+
+      &:hover {
+        background-color: #f57c00;
+      }
+
+      i {
+        margin-right: 5px;
+      }
+    }
+
+    &.btn-info {
+      background-color: #17a2b8;
+      color: white;
+
+      &:hover {
+        background-color: #138496;
+      }
+
+      i {
+        margin-right: 5px;
+      }
+    }
+  }
+}
+
+  // Workflow Status Section
+  .workflow-status-section {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0 0 15px 0;
+      color: #495057;
+      font-size: 18px;
+
+      i {
+        margin-right: 8px;
+        color: #007bff;
+      }
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      text-align: center;
+      min-width: 200px;
+
+      &.assigned {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffeaa7;
+      }
+
+      &.in_progress {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 2px solid #bee5eb;
+      }
+
+      &.submitted {
+        background: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+      }
+
+      &.under_review {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffeaa7;
+      }
+
+      &.approved {
+        background: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+      }
+
+      &.rejected {
+        background: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+      }
+    }
+  }
+
+  // Workflow Actions Section
+  .workflow-actions-section {
+    background: #ffffff;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0 0 20px 0;
+      color: #495057;
+      font-size: 18px;
+
+      i {
+        margin-right: 8px;
+        color: #007bff;
+      }
+    }
+
+    .operator-actions, .reviewer-actions, .fallback-reviewer {
+      margin-bottom: 20px;
+
+      .btn {
+        margin: 5px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 500;
+
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+
+    .reviewer-info {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 5px;
+
+      .current-reviewer {
+        background: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 5px;
+        border-left: 4px solid #28a745;
+
+        i {
+          margin-right: 8px;
+        }
+      }
+
+      .waiting-reviewer {
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        border-radius: 5px;
+        border-left: 4px solid #ffc107;
+
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+
+    .comments-section {
+      margin-bottom: 15px;
+
+      h4 {
+        margin: 0 0 10px 0;
+        color: #495057;
+        font-size: 16px;
+
+        i {
+          margin-right: 8px;
+          color: #007bff;
+        }
+      }
+
+      textarea {
+        width: 100%;
+        border: 2px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        font-family: inherit;
+
+        &:focus {
+          border-color: #007bff;
+          outline: none;
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        &:disabled {
+          background: #f8f9fa;
+          color: #6c757d;
+        }
+      }
+    }
+
+    .reviewer-buttons {
+      .btn {
+        margin: 5px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 500;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+
+    .admin-actions {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #dee2e6;
+
+      .btn {
+        margin: 5px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 500;
+
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+
+  // Review Assignments
+  .review-assignments {
+    background: #ffffff;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0 0 20px 0;
+      color: #495057;
+      font-size: 18px;
+
+      i {
+        margin-right: 8px;
+        color: #007bff;
+      }
+    }
+
+    .assignment-list {
+      .assignment-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        background: #f8f9fa;
+
+        &.current {
+          border-color: #007bff;
+          background: #e3f2fd;
+        }
+
+        &.completed {
+          border-color: #28a745;
+          background: #d4edda;
+        }
+
+        .sequence-number {
+          background: #007bff;
+          color: white;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          margin-right: 15px;
+        }
+
+        .reviewer-name {
+          flex: 1;
+          font-weight: 500;
+          color: #495057;
+        }
+
+        .status-badge {
+          padding: 5px 15px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: bold;
+          text-transform: uppercase;
+
+          &.approved {
+            background: #d4edda;
+            color: #155724;
+          }
+
+          &.pending {
+            background: #fff3cd;
+            color: #856404;
+          }
+
+          &.in_progress {
+            background: #d1ecf1;
+            color: #0c5460;
+          }
+
+          &.rejected {
+            background: #f8d7da;
+            color: #721c24;
+          }
+        }
+
+        .review-comment {
+          margin-top: 10px;
+          padding: 10px;
+          background: #ffffff;
+          border-radius: 5px;
+          border-left: 3px solid #007bff;
+          font-style: italic;
+          color: #6c757d;
+        }
+      }
+    }
+  }
+
+  // Status Messages
+  .status-message {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-weight: 500;
+
+    i {
+      margin-right: 8px;
+    }
+
+    &.status-message-submitted {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+    }
+
+    &.status-message-approved {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+    }
+
+    &.status-message-readonly {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #f5c6cb;
+    }
+
+    &.status-message-under-review {
+      background: #fff3cd;
+      color: #856404;
+      border: 2px solid #ffeaa7;
+    }
+  }
+

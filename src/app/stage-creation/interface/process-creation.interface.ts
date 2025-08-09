@@ -124,4 +124,5 @@ export interface StageListTaskWise {
 export interface AssignProcessToRole {
   process_id: string;
   role_id: string;
+  step_order?: string;
 }

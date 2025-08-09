@@ -3,88 +3,120 @@
 
 <section class="user-main-content">
   <!-- Workflow Status Section -->
-  <div class="workflow-status-section" *ngIf="workflowData">
-    <div class="status-badge" [ngClass]="'status-' + currentStatus">
-      STATUS: {{ currentStatus.toUpperCase() }}
+  <div class="workflow-status-section">
+    <h3><i class="pi pi-info-circle"></i> Workflow Status</h3>
+    <div class="status-badge" [class]="currentStatus">
+      <strong>STATUS: {{ currentStatus.toUpperCase() }}</strong>
     </div>
   </div>
 
   <!-- Workflow Actions Section -->
-  <div class="workflow-actions-section" *ngIf="workflowData">
+  <div class="workflow-actions-section">
+    <h3><i class="pi pi-cog"></i> Workflow Actions</h3>
+
     <!-- Operator Actions (Role 8) -->
-    <div class="operator-actions" *ngIf="userRole === 8">
+    <div *ngIf="userRole === 8" class="operator-actions">
+      <!-- Start Work Button -->
       <button
-        pButton
-        type="button"
-        label="Start Work"
-        class="p-button-primary"
-        (click)="startWork()"
         *ngIf="currentStatus === 'assigned'"
-        style="margin: 5px;">
+        type="button"
+        class="btn btn-primary"
+        (click)="startWork()">
+        <i class="fas fa-play"></i> Start Work
       </button>
 
+      <!-- Save Form Button -->
       <button
-        pButton
-        type="button"
-        label="Save Form"
-        class="p-button-success"
-        (click)="submitForm()"
         *ngIf="isFormEditable"
-        style="margin: 5px;">
+        type="button"
+        class="btn btn-success"
+        (click)="submitForm()">
+        <i class="fas fa-save"></i> Save Form
       </button>
 
+      <!-- Submit for Review Button -->
       <button
-        pButton
-        type="button"
-        label="Submit for Review"
-        class="p-button-info"
-        (click)="submitForReview()"
         *ngIf="canSubmit && currentStatus === 'in_progress'"
-        style="margin: 5px;">
+        type="button"
+        class="btn btn-info"
+        (click)="submitForReview()">
+        <i class="fas fa-paper-plane"></i> Submit for Review
       </button>
 
+      <!-- Resubmit for Review Button -->
       <button
-        pButton
-        type="button"
-        label="Resubmit for Review"
-        class="p-button-info"
-        (click)="resubmitForReview()"
         *ngIf="canSubmit && currentStatus === 'rejected'"
-        style="margin: 5px;">
+        type="button"
+        class="btn btn-warning"
+        (click)="resubmitForReview()">
+        <i class="fas fa-redo"></i> Resubmit for Review
       </button>
     </div>
 
-    <!-- Reviewer Actions (Role 9) -->
-    <div class="reviewer-actions" *ngIf="userRole === 9">
-      <div class="review-section">
+    <!-- Reviewer Actions -->
+    <div *ngIf="userRole !== 8 && (currentStatus === 'submitted' || currentStatus === 'under_review')" class="reviewer-actions">
+      <div class="reviewer-info">
+        <div *ngIf="isCurrentReviewer" class="current-reviewer">
+          <i class="fas fa-user-check"></i> You are the current reviewer ({{ reviewSequence }} of {{ totalReviewers }})
+        </div>
+        <div *ngIf="!isCurrentReviewer && isAssignedReviewer" class="waiting-reviewer">
+          <i class="fas fa-clock"></i> Waiting for your turn in the review sequence
+        </div>
+        <div *ngIf="!isAssignedReviewer" class="single-reviewer">
+          <i class="fas fa-user"></i> You are a reviewer (Role {{ userRole }}) - Single reviewer mode
+        </div>
+      </div>
+
+      <!-- Review Comment Section -->
+      <div class="comments-section">
+        <h4><i class="fas fa-comment"></i> Review Comment</h4>
         <textarea
-          pInputTextarea
           [(ngModel)]="newComment"
-          placeholder="Add your comment here..."
-          rows="3"
-          class="comment-textarea"
-          style="width: 100%; margin-bottom: 10px;">
+          placeholder="Enter your review comment..."
+          rows="4"
+          [disabled]="hasReviewed || !(shouldBeCurrentReviewer || (reviewSequence === 1 && isAssignedReviewer && currentStatus === 'under_review')) || userRole === 8"
+          class="form-control">
         </textarea>
+      </div>
 
+      <!-- Reviewer Action Buttons -->
+      <div class="reviewer-buttons" *ngIf="!hasReviewed && (shouldBeCurrentReviewer || (reviewSequence === 1 && isAssignedReviewer && currentStatus === 'under_review')) && userRole !== 8">
         <button
-          pButton
           type="button"
-          label="Accept & Forward"
-          class="p-button-success"
-          (click)="approveForm()"
-          *ngIf="canReview && currentStatus === 'submitted'"
-          style="margin: 5px;">
+          class="btn btn-success"
+          (click)="approveAndForwardDynamic()"
+          [disabled]="!newComment.trim()">
+          <i class="fas fa-check"></i> Approve & Forward
         </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="rejectAndSendBackDynamic()"
+          [disabled]="!newComment.trim()">
+          <i class="fas fa-times"></i> Reject & Send Back
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <button
-          pButton
-          type="button"
-          label="Reject & Send Back"
-          class="p-button-danger"
-          (click)="rejectForm()"
-          *ngIf="canReview && currentStatus === 'submitted'"
-          style="margin: 5px;">
-        </button>
+  <!-- Review Sequence Display -->
+  <div *ngIf="reviewAssignments.length > 0" class="review-assignments">
+    <h3><i class="fas fa-list-ol"></i> Review Sequence</h3>
+    <div class="assignment-list">
+      <div
+        *ngFor="let assignment of reviewAssignments; let i = index"
+        class="assignment-item"
+        [class.current]="assignment.review_sequence === reviewSequence"
+        [class.completed]="assignment.review_status === 'approved'"
+        [class.pending]="assignment.review_status === 'pending'">
+        <div class="sequence-number">{{ assignment.review_sequence }}</div>
+        <div class="reviewer-name">{{ assignment.reviewer_name }}</div>
+        <div class="status-badge" [class]="assignment.review_status">
+          {{ assignment.review_status }}
+        </div>
+        <div *ngIf="assignment.review_comment" class="review-comment">
+          {{ assignment.review_comment }}
+        </div>
       </div>
     </div>
   </div>
@@ -105,13 +137,18 @@
     This form is currently read-only. You cannot make changes at this time.
   </div>
 
+  <div class="status-message status-message-under-review" *ngIf="userRole === 8 && currentStatus === 'under_review'">
+    <i class="pi pi-clock"></i>
+    Form is under review by assigned reviewers. You cannot edit until the review process is complete.
+  </div>
+
   <!-- Comments Section -->
   <div class="comments-section" *ngIf="comments.length > 0">
     <h3>Comments</h3>
     <div class="comment-list">
       <div class="comment-item" *ngFor="let comment of comments">
         <div class="comment-header">
-          <span class="comment-author">{{ comment.user_role | titlecase }}</span>
+          <span class="comment-author">{{ (comment.user_name || comment.user_role) | titlecase }}</span>
           <span class="comment-date">{{ comment.created_date | date:'short' }}</span>
         </div>
         <div class="comment-text">{{ comment.comment_text }}</div>
@@ -414,4 +451,7 @@
   <!--<div class="form-submit-wrap" *ngIf="canSubmit">
     <button type="submit" class="submit-btn" (click)="submitForm()">Save Form</button>
   </div>-->
+
+
 </section>
+

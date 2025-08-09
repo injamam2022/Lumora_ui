@@ -2,8 +2,8 @@
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 1.5rem; /* same as manage process cards */
+  margin-bottom: 1.5rem; /* same vertical spacing */
   box-shadow: 0 4px 12px rgba(29, 132, 255, 0.08);
 }
 
@@ -70,8 +70,8 @@
 .button-wrap {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ccc;
-  margin-bottom: 1.5rem;
+  border-bottom: 1px solid transparent; /* remove extra divider line to match */
+  margin-bottom: 0; /* align with manage process */
   button+button{
     margin-left: 10px;
   }
@@ -80,7 +80,7 @@
 .add-new-parameters {
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.25rem; /* keep same as stage-creation add buttons */
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -129,29 +129,16 @@
 
 // --- Improved Add Parameter Form Alignment ---
 .add-form.form-card {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-  padding: 1.5rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  margin-top: 0;            /* match manage process modal: no extra outer margin */
+  margin-bottom: 0;
+  padding: 0;               /* modal body handles padding */
+  background: transparent;  /* use dialog background, not card */
+  border: 0;
+  border-radius: 0;
 }
-.form-row {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
+.form-row { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 0.8rem; }
 .form-row input,
 .form-row textarea,
-.form-row .p-dropdown {
-  flex: 1 1 0;
-  min-width: 0;
-}
-.button-row {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
+.form-row .p-dropdown { width: 100%; padding: 0.55rem 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+.button-row { display: flex; gap: 0.7rem; justify-content: flex-end; margin-top: 0.5rem; }
 // --- End Add Parameter Form Alignment ---

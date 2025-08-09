@@ -1,11 +1,12 @@
 .user-main-content {
-  margin-top: 100px;
+  margin-top: 80px;
   margin-left: 330px;
   margin-right: 15px;
-  transition: 0.5s;
+  transition: all 0.3s ease;
   background: #fff;
-  padding: 30px;
-  transition: 0.5s;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   &.maincont {
     padding-left: 315px;
   }
@@ -29,27 +30,74 @@
   color: #fff;
 }
 
-:host ::ng-deep .p-datatable .p-datatable-thead > tr > th .flex {
-  display: flex;
-  align-items: center;
-}
-:host ::ng-deep .p-datatable-header > div {
-  display: flex;
-  justify-content: space-between;
-}
-:host ::ng-deep .p-datatable > .p-datatable-wrapper {
-  height: calc(100vh - 200px);
-}
-:host ::ng-deep .p-datatable-thead {
-  position: sticky;
-  top: 0;
-  z-index: 99;
-}
+// Table helpers (kept)
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th .flex { display: flex; align-items: center; }
+:host ::ng-deep .p-datatable-header > div { display: flex; justify-content: space-between; }
+:host ::ng-deep .p-datatable > .p-datatable-wrapper { height: calc(100vh - 200px); }
+:host ::ng-deep .p-datatable-thead { position: sticky; top: 0; z-index: 99; }
 
 
 
 .elogbook-form-builder {
-  padding: 1.5rem;
+  padding: 0; /* match manage process which doesn't add inner padding wrapper */
+}
+
+/* Match Manage Process header form layout */
+.all-form-wrap {
+  width: 100%;
+  .form-row {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    .form-col {
+      width: 100%;
+      max-width: calc(50% - 0.75rem);
+      flex: 0 0 calc(50% - 0.75rem);
+      .form {
+        width: 100%;
+        margin-bottom: 1.5rem;
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+          color: #344767;
+        }
+        input[pInputText] {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+          font-size: 0.95rem;
+          &:focus {
+            border-color: #1d84ff;
+            box-shadow: 0 0 0 3px rgba(29, 132, 255, 0.1);
+            outline: none;
+          }
+        }
+      }
+    }
+  }
+  .button-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+    button {
+      background: #091835;
+      border: 0;
+      display: flex;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      cursor: pointer;
+    }
+  }
 }
 
 .elogbook-param-card {
@@ -97,11 +145,8 @@ input[pInputText], textarea[pInputTextarea] {
   margin-bottom: 0.5rem;
 }
 
-.button-wrap {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
+/* Secondary button-wraps inside cards/lists */
+.button-wrap { display: flex; gap: 1rem; margin-top: 1.5rem; }
 
 ::ng-deep .parameter-management-container {
   width: 50%;
@@ -129,10 +174,83 @@ input[pInputText], textarea[pInputTextarea] {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  margin-top: 2rem;
-  padding: 2rem;
+  margin-top: 1.5rem; /* match spacing */
+  padding: 1.5rem;    /* match card padding */
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
+.elogbook-branching-rules-card .branching-form-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr 1.2fr 1.2fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+.elogbook-branching-rules-card .branching-form-group label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #344767;
+  margin-bottom: 0.4rem;
+}
+.elogbook-branching-rules-card .branching-dropdown,
+.elogbook-branching-rules-card .branching-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.elogbook-branching-rules-card .branching-add-btn {
+  padding: 0.75rem 1.25rem;
+}
+.elogbook-branching-rules-card .branching-rules-list {
+  margin-top: 1.5rem;
+}
+
+/* Block layout to mirror Manage Process (without stage/task rows) */
+.elog-rule-block {
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+.elog-rule-block .form-group {
+  margin-bottom: 1rem;
+}
+.elog-rule-block .form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #344767;
+}
+.elog-rule-block .branching-dropdown,
+.elog-rule-block .branching-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+.elog-rule-block .rule-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* Already Added Rules styling copied from process */
+.already-added-rules { margin-top: 1rem; }
+.rules-title { font-size: 1.1rem; font-weight: 600; color: #2c3e50; margin-bottom: 1rem; }
+.rules-list { display: flex; flex-direction: column; gap: 1rem; }
+.rule-card { background: linear-gradient(135deg,#f7f7f7,#ffffff); border:1px solid #dcdcdc; border-left:5px solid #4caf50; padding: 15px 20px; border-radius:10px; box-shadow:0px 3px 6px rgba(0,0,0,0.05); }
+.rule-header { font-size: 1rem; font-weight: 500; color:#34495e; display:flex; align-items:center; gap:10px; }
+.parameter-name { background:#e3f2fd; padding:4px 8px; border-radius:5px; font-weight:600; color:#1976d2; }
+.arrow { color:#999; }
+.parameter-value { background:#fff3e0; padding:4px 8px; border-radius:5px; font-weight:600; color:#ef6c00; }
+.rule-body { margin-top:10px; font-size: 0.95rem; color:#555; }
+.delete-btn { margin-top:8px; background:#ff4d4f; color:#fff; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; }
+
+/* Buttons like manage process */
+.button-wrapper { display:flex; justify-content: space-between; margin-top: 1rem; }
+.add-btn { padding: 10px 15px; border-radius: 4px; cursor: pointer; border: 1px solid #d9d9d9; background:#fafafa; }
+.submit-btn { padding: 10px 15px; border-radius: 4px; cursor: pointer; background:#1890ff; color:#fff; border:1px solid #1890ff; }
+.button-global-wrapper { display:flex; justify-content:flex-end; margin-top: 1rem; }
 
 .branching-header-row {
   display: flex;
@@ -214,3 +332,26 @@ input[pInputText], textarea[pInputTextarea] {
 .branching-delete-btn {
   margin-left: auto;
 }
+
+/* Tabs styling same as Manage Process */
+.form-builder-btn {
+  width: 100%;
+  margin: 2rem 0 1rem 0;
+  display: flex;
+  gap: 1rem;
+  button {
+    padding: 1rem 1.5rem;
+    border: 0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #344767;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    &:hover { background: #f1f5f9; }
+    &.active { background-color: #1d84ff; color: #fff; }
+  }
+}
+
+.hint-note { color: #64748b; margin-top: .5rem; }

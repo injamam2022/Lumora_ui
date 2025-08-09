@@ -241,11 +241,13 @@ export class ElogbookService {
   public getSingleElogbookWithParameters(elogs_id: string) {
     // Fetch Elogbook details
     const elogbook$ = this.baseHttpService.post<any>('General/Get', {
-      elogs_master: { elogs_id }
+      // Use base table key; backend appends _master automatically
+      elogs: { elogs_id }
     });
-    // Fetch parameters for this Elogbook
-    const parameters$ = this.baseHttpService.post<any>('General/Get', {
-      param_master: { elogs_id, status: 1 }
+    // Fetch parameters for this Elogbook (use base name so CI suffixing works)
+    // Call dedicated elog params endpoint to read from param_master (status column)
+    const parameters$ = this.baseHttpService.post<any>('General/GetElogParams', {
+      elogs_id
     });
     return { elogbook$, parameters$ };
   }

@@ -93,6 +93,8 @@ export class GenericTableComponent {
   constructor(private customerService: UserHttpClientService) {}
 
   ngOnInit() {
+    console.log(this.genericTableData);
+
     this.representatives = [
       { name: 'Amy Elsner', image: 'amyelsner.png' },
       { name: 'Anna Fali', image: 'annafali.png' },

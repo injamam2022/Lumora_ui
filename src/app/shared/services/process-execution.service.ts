@@ -411,4 +411,92 @@ export class ProcessExecutionService {
 
     return this.baseHttpService.post<any>(`General/DebugUserRole`, payload);
   }
+
+  // Multi-user workflow methods
+  assignMultipleReviewers(submissionId: string, reviewerIds: number[]): Observable<any> {
+    const userData = localStorage.getItem('userData');
+    const userDataObj = userData ? JSON.parse(userData) : {};
+
+    const payload = {
+      submission_id: submissionId,
+      reviewer_ids: reviewerIds,
+      user_id: userDataObj.admin_id || 1,
+      user_role: userDataObj.role_id || 1
+    };
+
+    return this.baseHttpService.post<any>(`General/AssignMultipleReviewers`, payload);
+  }
+
+  getCurrentReviewer(submissionId: string): Observable<any> {
+    const payload = {
+      submission_id: submissionId
+    };
+
+    return this.baseHttpService.post<any>(`General/GetCurrentReviewer`, payload);
+  }
+
+  moveToNextReviewer(submissionId: string, assignmentId: number, comment?: string): Observable<any> {
+    const userData = localStorage.getItem('userData');
+    const userDataObj = userData ? JSON.parse(userData) : {};
+
+    const payload = {
+      submission_id: submissionId,
+      assignment_id: assignmentId,
+      comment: comment || '',
+      user_id: userDataObj.admin_id || 1,
+      user_role: userDataObj.role_id || 1
+    };
+
+    return this.baseHttpService.post<any>(`General/MoveToNextReviewer`, payload);
+  }
+
+  getReviewAssignments(submissionId: string): Observable<any> {
+    const payload = {
+      submission_id: submissionId
+    };
+
+    return this.baseHttpService.post<any>(`General/GetReviewAssignments`, payload);
+  }
+
+  isCurrentReviewer(submissionId: string): Observable<any> {
+    const userData = localStorage.getItem('userData');
+    const userDataObj = userData ? JSON.parse(userData) : {};
+
+    const payload = {
+      submission_id: submissionId,
+      user_id: userDataObj.admin_id || 1,
+      user_role: userDataObj.role_id || 1
+    };
+
+    return this.baseHttpService.post<any>(`General/IsCurrentReviewer`, payload);
+  }
+
+  // Dynamic multi-user workflow methods
+  assignDynamicReviewers(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/AssignDynamicReviewers`, payload);
+  }
+
+  getDynamicCurrentReviewer(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetDynamicCurrentReviewer`, payload);
+  }
+
+  processDynamicReview(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/ProcessDynamicReview`, payload);
+  }
+
+  getSubmissionReviewers(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetSubmissionReviewers`, payload);
+  }
+
+  updateCurrentReviewer(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/UpdateCurrentReviewer`, payload);
+  }
+
+  setDynamicCurrentReviewer(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/SetDynamicCurrentReviewer`, payload);
+  }
+
+  reassignReviewersForExistingSubmission(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>(`General/ReassignReviewersForExistingSubmission`, payload);
+  }
 }

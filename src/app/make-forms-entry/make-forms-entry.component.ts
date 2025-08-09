@@ -23,6 +23,7 @@ import { Room } from '../room/interface/room.interface';
 import { Material } from '../material/interface/material.interface';
 import { PortableResource } from '../portable-resource/interface/portable-resource.interface';
 import { WorkflowResponse, FormComment } from '../shared/interface/workflow.interface';
+import { CurrentReviewerInfo, ReviewAssignment, ReviewerStatus } from '../shared/interface/workflow.interface';
 
 @Component({
   selector: 'app-make-forms-entry',
@@ -81,15 +82,28 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
   resourceTimeData: { [key: string]: any } = {};
 
   // Workflow properties
-  public workflowData: WorkflowResponse | null = null;
-  public isFormEditable: boolean = false;
-  public canSubmit: boolean = false;
-  public canReview: boolean = false;
-  public currentStatus: string = '';
-  public userRole: number = 1;
-  public comments: FormComment[] = [];
-  public newComment: string = '';
-  public hasBeenRejected: boolean = false;
+  workflowData: any = null;
+  isFormEditable: boolean = false;
+  canSubmit: boolean = false;
+  canReview: boolean = false;
+  currentStatus: string = '';
+  userRole: number = 1;
+  comments: any[] = [];
+  newComment: string = '';
+  hasBeenRejected: boolean = false;
+
+  // Multi-user workflow properties
+  currentReviewerInfo: any = null;
+  reviewAssignments: any[] = [];
+  reviewerStatus: string = '';
+  // Current user's review status and guard flags
+  myReviewStatus: 'none' | 'pending' | 'in_progress' | 'approved' | 'rejected' = 'none';
+  hasReviewed: boolean = false;
+  isCurrentReviewer: boolean = false;
+  isAssignedReviewer: boolean = false;
+  shouldBeCurrentReviewer: boolean = false;
+  reviewSequence: number = 1;
+  totalReviewers: number = 0;
 
   public constructor(
     public processExecutionService: ProcessExecutionService,
@@ -141,52 +155,101 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
           this.comments = response.comments || [];
           this.hasBeenRejected = (response as any).has_been_rejected || false;
 
-          // Set portable resources from workflow data if available
-          if (response.data?.portable_resources && Array.isArray(response.data.portable_resources) && response.data.portable_resources.length > 0) {
-            this.selectedPortableResources = response.data.portable_resources as PortableResource[];
-            this.initializePortableResourceActivities();
-          }
-
           // Get user role from localStorage for proper role detection
           const userData = localStorage.getItem('userData');
           const localStorageRole = userData ? JSON.parse(userData).role_id : 1;
           this.userRole = parseInt(localStorageRole.toString());
+
+          console.log('📥 Workflow data loaded:');
+          console.log('  - Backend status:', response.status);
+          console.log('  - Normalized status:', this.currentStatus);
+          console.log('  - Editable:', this.isFormEditable);
+          console.log('  - Can submit:', this.canSubmit);
+          console.log('  - Can review:', this.canReview);
+          console.log('  - User role:', this.userRole);
+          console.log('  - Has been rejected:', this.hasBeenRejected);
+
+          // Set portable resources from workflow data if available
+          if (response.data && response.data.portable_resources) {
+            try {
+              const portableData = JSON.parse(response.data.portable_resources);
+              this.selectedPortableResources = portableData || [];
+            } catch (e) {
+              this.selectedPortableResources = [];
+            }
+          }
+
+          // Initialize portable resource activities
+          if (this.selectedPortableResources.length > 0) {
+            this.initializePortableResourceActivities();
+          }
 
           // Reload portable resources if room is selected and form is editable
           if (this.selectedRoom && this.isFormEditable) {
             this.loadPortableResources();
           }
 
-          // Fallback: Always reload portable resources if room is selected
-          if (this.selectedRoom && this.allPortableResources.length === 0) {
-            this.loadPortableResources();
-          }
+          // Load current reviewer information for multi-user workflow
+          this.loadDynamicCurrentReviewerInfo();
 
-          // Start timer updates if portable resources are available
-          if (this.selectedPortableResources.length > 0 || (this.workflowData?.data?.portable_resources && this.workflowData.data.portable_resources.length > 0)) {
-            this.startTimerUpdates();
-          }
+          // Load submission reviewers
+          this.loadSubmissionReviewers();
 
-          // Auto-start work for role 8 users when status is 'assigned'
-          if (this.userRole == 8 && this.currentStatus === 'assigned' && this.isFormEditable) {
-            this.startWork();
-          }
+          // Ensure first reviewer is set as current if needed
+          this.ensureFirstReviewerIsCurrent();
 
-          // Reload portable resources if room is selected
-          if (this.selectedRoom) {
-            this.loadPortableResources();
-          }
-
-          // Check for any running timers and start updates if needed
+          // Check and start timer updates if needed
           this.checkAndStartTimerUpdates();
+
+          // Remove automatic synchronization to prevent infinite loops
+          // Force refresh after a delay to ensure status synchronization
+          // setTimeout(() => {
+          //   this.synchronizeWorkflowStatus();
+          // }, 1000);
         } else {
-          console.log('❌ No workflow data found for this process');
           console.log('Response stat:', response.stat);
           console.log('Response msg:', response.msg);
         }
       },
       error: (error) => {
         console.error('❌ Error loading workflow data:', error);
+      }
+    });
+  }
+
+  // Synchronize workflow status with backend
+  synchronizeWorkflowStatus() {
+    if (!this.processId) return;
+
+    console.log('🔄 Synchronizing workflow status...');
+
+    this.processExecutionService.getFormSubmissionWithWorkflow(this.processId).subscribe({
+      next: (response: any) => {
+        if (response.stat === 200) {
+          const backendStatus = response.status ? response.status.trim().toLowerCase() : '';
+          console.log('🔍 Backend status:', backendStatus);
+          console.log('🔍 Current frontend status:', this.currentStatus);
+
+          if (backendStatus !== this.currentStatus) {
+            console.log('⚠️ Status mismatch detected! Updating...');
+            this.currentStatus = backendStatus;
+            this.workflowData = response;
+            this.isFormEditable = response.editable;
+            this.canSubmit = response.can_submit;
+            this.canReview = response.can_review;
+            this.hasBeenRejected = (response as any).has_been_rejected || false;
+
+            // Don't automatically reload to prevent infinite loops
+            // Reload reviewer info and assignments after status update
+            // this.loadDynamicCurrentReviewerInfo();
+            // this.loadSubmissionReviewers();
+          } else {
+            console.log('✅ Status is synchronized');
+          }
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error synchronizing workflow status:', error);
       }
     });
   }
@@ -244,8 +307,9 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
           this.toasterService.errorToast('Form rejected and sent back for editing.');
         }
 
+        // Don't automatically reload to prevent infinite loops
         // Reload workflow data to update permissions
-        this.loadWorkflowData();
+        // this.loadWorkflowData();
       },
       error: (error) => {
         console.error('❌ Error updating workflow status:', error);
@@ -280,31 +344,92 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Submit for review
+  // Submit form for review with automatic reviewer assignment
   submitForReview() {
-    // Prevent submission if form is not editable or status is not in_progress
-    if (!this.isFormEditable) {
-      this.toasterService.errorToast('Form is not editable in its current status');
+    if (!this.workflowData?.data?.submission_id) {
+      this.toasterService.errorToast('No submission found');
       return;
     }
 
-    if (this.currentStatus !== 'in_progress') {
-      this.toasterService.errorToast('Form can only be submitted when status is in progress');
-      return;
-    }
-
-    // First save the form data
+    // First save the form
     this.submitForm();
 
     // Then update workflow status to submitted
-    if (this.workflowData?.data.submission_id) {
-      this.updateWorkflowStatus('submitted', 'Form submitted for review by operator');
+    this.processExecutionService.updateWorkflowStatus(
+      this.workflowData.data.submission_id.toString(),
+      'submitted',
+      'Form submitted for review by operator'
+    ).subscribe({
+      next: (response) => {
+        if (response.stat === 200) {
+          this.toasterService.successToast('Form submitted for review successfully!');
+
+          // Reload workflow data after a short delay to get updated reviewer info
+          setTimeout(() => {
+            this.loadWorkflowData();
+          }, 1000);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Failed to submit form for review');
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error submitting form for review:', error);
+        this.toasterService.errorToast('Failed to submit form for review');
+      }
+    });
+  }
+
+  // Automatically assign reviewers based on user roles
+  autoAssignReviewers() {
+    if (!this.workflowData?.data?.submission_id) return;
+
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const currentUserId = userData ? JSON.parse(userData).admin_id : 1;
+    const currentUserRole = userData ? JSON.parse(userData).role_id : 1;
+
+    // Define default reviewer IDs (roles 9, 10, 11, 12)
+    let reviewerIds = [9, 10, 11, 12];
+
+    // If current user is not role 8, add them to the reviewer list
+    if (currentUserRole !== 8) {
+      if (!reviewerIds.includes(currentUserId)) {
+        reviewerIds.unshift(currentUserId); // Add current user as first reviewer
+      }
     }
+
+                    // Remove duplicates
+    reviewerIds = [...new Set(reviewerIds)];
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString(),
+      reviewer_ids: reviewerIds,
+      user_id: currentUserId,
+      user_role: currentUserRole
+    };
+
+    this.processExecutionService.assignDynamicReviewers(payload).subscribe({
+      next: (response: any) => {
+        if (response.stat === 200) {
+          this.toasterService.successToast(`Assigned ${reviewerIds.length} reviewers automatically`);
+          // Reload workflow data to reflect changes
+          setTimeout(() => {
+            this.loadWorkflowData();
+          }, 500);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Error assigning reviewers');
+        }
+      },
+      error: (error: any) => {
+        console.error('Error assigning reviewers:', error);
+        this.toasterService.errorToast('Error assigning reviewers');
+      }
+    });
   }
 
   // Submit form with workflow
   submitFormWithWorkflow() {
-    if (!this.canSubmit) {
+    if (!this.isFormEditable) {
       this.toasterService.errorToast('You are not authorized to submit this form');
       return;
     }
@@ -356,8 +481,8 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
 
   // Approve form (existing method)
   approveForm() {
-    if (!this.canReview) {
-      this.toasterService.errorToast('You are not authorized to approve this form');
+    if (!this.isCurrentReviewer) {
+      this.toasterService.errorToast('You are not the current reviewer');
       return;
     }
 
@@ -386,7 +511,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         if (response.stat === 200) {
-          this.toasterService.successToast('Form rejected and sent back to operator for editing');
+          this.toasterService.successToast('Form rejected and sent back to operator for resubmission.');
 
           // Clear comment
           this.newComment = '';
@@ -402,9 +527,9 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('❌ Error rejecting form:', error);
         this.toasterService.errorToast('Error rejecting form');
-      }
-    });
-  }
+            }
+          });
+                }
 
   // Start work (change status to in_progress)
   startWork() {
@@ -421,7 +546,7 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     .getSingleProcessExecution(this.processId)
     .subscribe((response) => {
       this.processData = response.data;
-        });
+      });
   }
 
   loadDropdownData() {
@@ -1340,5 +1465,546 @@ export class MakeFormsEntryComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Load current reviewer information for dynamic workflow
+  loadDynamicCurrentReviewerInfo() {
+    if (!this.workflowData?.data?.submission_id) return;
 
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString(),
+      user_id: userId
+    };
+
+    console.log('🔍 Loading current reviewer info for user:', userId);
+    console.log('🔍 Current workflow status:', this.currentStatus);
+    console.log('🔍 User role:', this.userRole);
+
+    this.processExecutionService.getDynamicCurrentReviewer(payload).subscribe({
+      next: (response: any) => {
+        if (response.stat === 200) {
+          const data = response.data;
+          this.isAssignedReviewer = data.is_assigned_reviewer;
+          this.isCurrentReviewer = data.is_current_reviewer;
+          this.shouldBeCurrentReviewer = data.should_be_current_reviewer;
+          this.reviewSequence = data.review_sequence || 1;
+          this.totalReviewers = data.total_reviewers || 0;
+
+          console.log('✅ Reviewer info loaded:');
+          console.log('  - Is assigned reviewer:', this.isAssignedReviewer);
+          console.log('  - Is current reviewer:', this.isCurrentReviewer);
+          console.log('  - Should be current reviewer:', this.shouldBeCurrentReviewer);
+          console.log('  - Review sequence:', this.reviewSequence);
+          console.log('  - Total reviewers:', this.totalReviewers);
+          console.log('  - Current reviewer ID:', data.current_reviewer_id);
+          console.log('  - User ID:', userId);
+          console.log('  - Current status:', this.currentStatus);
+          console.log('  - User role:', this.userRole);
+
+          // If user should be current reviewer but isn't set as current, set them as current
+          if (this.shouldBeCurrentReviewer && !this.isCurrentReviewer) {
+            console.log('🔧 User should be current reviewer but isn\'t set - setting as current');
+            // Remove automatic setting to prevent infinite loops
+            // this.setCurrentReviewer(userId);
+            // return; // Exit early, will reload after setting current reviewer
+          }
+
+          // Special handling for first reviewer - always show buttons if they are assigned
+          if (this.reviewSequence === 1 && this.isAssignedReviewer && this.currentStatus === 'under_review') {
+            console.log('🔧 First reviewer detected - forcing shouldBeCurrentReviewer to true');
+            this.shouldBeCurrentReviewer = true;
+          }
+
+          // Handle form editability based on user role
+          if (this.userRole === 8) {
+            // Role 8 (operator) can always edit the form if it's editable from backend
+            console.log('✅ Role 8 user - form editability determined by backend response');
+            // Don't override isFormEditable - keep what was set by loadWorkflowData
+
+            // Role 8 users are NOT reviewers - they should never see approve/reject buttons
+            this.isAssignedReviewer = false;
+            this.isCurrentReviewer = false;
+            this.shouldBeCurrentReviewer = false;
+            console.log('✅ Role 8 user - not a reviewer, hiding approve/reject buttons');
+          } else {
+            // For reviewers (roles 9, 10, 11, 12), handle current reviewer logic
+            if (this.isAssignedReviewer) {
+              console.log('🔍 User is assigned reviewer');
+              console.log('🔍 Current reviewer ID from DB:', data.current_reviewer_id);
+              console.log('🔍 User ID:', userId);
+              console.log('🔍 Current status:', this.currentStatus);
+              console.log('🔍 Review sequence:', this.reviewSequence);
+
+              // Check if user is first reviewer in sequence
+              const isFirstReviewer = this.reviewSequence === 1;
+              console.log('🔍 Is first reviewer in sequence:', isFirstReviewer);
+
+              // Don't automatically set current reviewer to prevent infinite loops
+              // SIMPLE OVERRIDE: If user is assigned reviewer and form is under review, make them current
+              // if (this.currentStatus === 'under_review' && isFirstReviewer) {
+              //   console.log('🔧 SIMPLE OVERRIDE: Making first assigned reviewer current');
+              //   this.isCurrentReviewer = true;
+              //   this.setCurrentReviewer(userId);
+              // } else
+              if (data.current_reviewer_id == userId) {
+                console.log('✅ User is the current reviewer');
+                this.isCurrentReviewer = true;
+              } else {
+                console.log('❌ User is not the current reviewer');
+                this.isCurrentReviewer = false;
+              }
+
+              // Enable form editing for current reviewer
+              if (this.isCurrentReviewer) {
+                this.isFormEditable = true;
+                console.log('✅ Current reviewer - enabling form editing');
+              } else {
+                this.isFormEditable = false;
+                console.log('❌ Not current reviewer - disabling form editing');
+              }
+            } else {
+              console.log('❌ User is not an assigned reviewer');
+              this.isFormEditable = false;
+              console.log('❌ Not assigned reviewer - disabling form editing');
+            }
+          }
+
+          console.log('🎯 Final state after loading reviewer info:');
+          console.log('  - isCurrentReviewer:', this.isCurrentReviewer);
+          console.log('  - isAssignedReviewer:', this.isAssignedReviewer);
+          console.log('  - reviewSequence:', this.reviewSequence);
+          console.log('  - currentStatus:', this.currentStatus);
+          console.log('  - isFormEditable:', this.isFormEditable);
+          console.log('  - userRole:', this.userRole);
+
+          // Don't automatically force set to prevent infinite loops
+          // If still not current reviewer but should be, force set
+          // if (!this.isCurrentReviewer && this.isAssignedReviewer && this.currentStatus === 'under_review') {
+          //   console.log('🔧 FORCE SET: User should be current reviewer');
+          //   this.forceSetCurrentReviewer(userId);
+          // }
+        } else {
+          console.error('❌ Error loading current reviewer info:', response.msg);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error loading current reviewer info:', error);
+      }
+    });
+  }
+
+  // Ensure first reviewer is set as current when form is submitted
+  ensureFirstReviewerIsCurrent() {
+    if (!this.workflowData?.data?.submission_id || this.currentStatus !== 'under_review') return;
+
+    const userData = localStorage.getItem('userData');
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    // Only for reviewers, not operators
+    if (this.userRole === 8) return;
+
+    console.log('🔧 ensureFirstReviewerIsCurrent called');
+    console.log('  - Submission ID:', this.workflowData.data.submission_id);
+    console.log('  - User ID:', userId);
+    console.log('  - User Role:', this.userRole);
+    console.log('  - Current Status:', this.currentStatus);
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString(),
+      user_id: userId
+    };
+
+    this.processExecutionService.getDynamicCurrentReviewer(payload).subscribe({
+      next: (response: any) => {
+        if (response.stat === 200) {
+          const data = response.data;
+          console.log('🔍 ensureFirstReviewerIsCurrent response:', data);
+
+          // If no current reviewer is set and this user is an assigned reviewer, set them as current
+          if (!data.current_reviewer_id && data.is_assigned_reviewer) {
+            console.log('🔧 No current reviewer set - setting first assigned reviewer as current');
+            this.setCurrentReviewer(userId);
+
+            // Force reload the reviewer info after setting current reviewer
+            setTimeout(() => {
+              this.loadDynamicCurrentReviewerInfo();
+            }, 500);
+          } else if (data.current_reviewer_id) {
+            console.log('✅ Current reviewer already set:', data.current_reviewer_id);
+          } else {
+            console.log('❌ User is not an assigned reviewer');
+          }
+        } else {
+          console.error('❌ Error in ensureFirstReviewerIsCurrent:', response.msg);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error ensuring first reviewer:', error);
+      }
+    });
+  }
+
+  // Load submission reviewers
+  loadSubmissionReviewers() {
+    if (!this.workflowData?.data?.submission_id) return;
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString()
+    };
+
+    this.processExecutionService.getSubmissionReviewers(payload).subscribe({
+      next: (response: any) => {
+        if (response.stat === 200) {
+          this.reviewAssignments = response.data || [];
+          console.log('✅ Reviewer assignments loaded:', this.reviewAssignments);
+
+          // Update current user's review status
+          try {
+            const currentUserId = this.getUserId();
+            const mine = (this.reviewAssignments || []).find((a: any) => String(a.reviewer_id) === String(currentUserId));
+            this.myReviewStatus = (mine?.review_status as any) || 'none';
+            this.hasReviewed = this.myReviewStatus === 'approved' || this.myReviewStatus === 'rejected';
+            console.log('👤 My review status:', this.myReviewStatus, 'hasReviewed:', this.hasReviewed);
+          } catch (e) {
+            console.warn('Could not determine my review status:', e);
+            this.myReviewStatus = 'none';
+            this.hasReviewed = false;
+          }
+
+          // Don't automatically force set to prevent infinite loops
+          // Force set first reviewer as current if needed
+          // if (this.currentStatus === 'under_review') {
+          //   setTimeout(() => {
+          //     this.forceSetFirstReviewerAsCurrent();
+          //   }, 1000);
+          // }
+        } else {
+          console.error('Error loading submission reviewers:', response.msg);
+          this.reviewAssignments = [];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading submission reviewers:', error);
+        this.reviewAssignments = [];
+      }
+    });
+  }
+
+  // Process dynamic review with proper sequential workflow
+  processDynamicReview(action: 'approve' | 'reject') {
+    if (!this.workflowData?.data?.submission_id) {
+      this.toasterService.errorToast('No submission found');
+      return;
+    }
+
+    if (!this.newComment.trim()) {
+      this.toasterService.errorToast('Please add a comment before approving or rejecting');
+      return;
+    }
+
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+
+    console.log('🔍 User data from localStorage:', userData);
+    console.log('🔍 Parsed userId:', userId);
+    console.log('🔍 Parsed userRole:', userRole);
+
+    // Ensure user is set as current reviewer before proceeding
+    if (this.isAssignedReviewer) {
+      console.log('🔧 User is assigned reviewer, ensuring they are current reviewer...');
+      this.ensureCurrentReviewerAndProcess(userId, action);
+    } else {
+      console.log('❌ User is not an assigned reviewer');
+      this.toasterService.errorToast('You are not an assigned reviewer for this form.');
+    }
+  }
+
+  // Helper method to ensure user is current reviewer and then process
+  private ensureCurrentReviewerAndProcess(userId: number, action: 'approve' | 'reject') {
+    if (!this.workflowData?.data?.submission_id) {
+      console.warn('⚠️ Cannot set current reviewer: submission_id is missing.');
+      return;
+    }
+
+    console.log('🔧 Ensuring user is current reviewer...');
+    console.log('  - Submission ID:', this.workflowData.data.submission_id);
+    console.log('  - User ID:', userId);
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString(),
+      user_id: userId
+    };
+
+    console.log('📤 Sending setCurrentReviewer payload:', payload);
+
+    this.processExecutionService.setDynamicCurrentReviewer(payload).subscribe({
+      next: (response: any) => {
+        console.log('📥 setCurrentReviewer response received:', response);
+        if (response.stat === 200) {
+          this.isCurrentReviewer = true;
+          console.log('✅ Current reviewer set successfully, now processing review...');
+
+          // Now process the review action
+          setTimeout(() => {
+            this.processReviewAction(action, userId);
+          }, 500);
+        } else {
+          console.warn('⚠️ setCurrentReviewer failed, but trying to process review anyway...');
+          this.toasterService.errorToast(response.msg || 'Failed to set current reviewer.');
+
+          // Try to process the review anyway (fallback)
+          setTimeout(() => {
+            this.processReviewAction(action, userId);
+          }, 500);
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Error setting current reviewer:', error);
+        this.toasterService.errorToast('Failed to set current reviewer.');
+
+        // Try to process the review anyway (fallback)
+        console.warn('⚠️ setCurrentReviewer error, but trying to process review anyway...');
+        setTimeout(() => {
+          this.processReviewAction(action, userId);
+        }, 500);
+      }
+    });
+  }
+
+  // Helper method to process the actual review action
+  private processReviewAction(action: 'approve' | 'reject', userId: number, userRole?: number) {
+    const payload = {
+      submission_id: this.workflowData!.data.submission_id.toString(),
+      action: action,
+      comment: this.newComment.trim(),
+      user_id: userId,
+      user_role: userRole || this.userRole
+    };
+
+    console.log('📤 Sending processDynamicReview payload:', payload);
+    console.log('🔍 Current state - isCurrentReviewer:', this.isCurrentReviewer);
+    console.log('🔍 Current state - isAssignedReviewer:', this.isAssignedReviewer);
+    console.log('🔍 Current state - reviewSequence:', this.reviewSequence);
+
+    this.processExecutionService.processDynamicReview(payload).subscribe({
+      next: (response: any) => {
+        console.log('📥 processDynamicReview response received:', response);
+
+        if (response.stat === 200) {
+          // Mark this reviewer as done so UI disables inputs immediately
+          this.hasReviewed = true;
+          this.myReviewStatus = action === 'approve' ? 'approved' : 'rejected';
+
+          if (action === 'approve') {
+            if (response.next_reviewer) {
+              this.toasterService.successToast(`Approved! Form forwarded to next reviewer: ${response.next_reviewer}`);
+            } else {
+              this.toasterService.successToast('Form approved! All reviewers have approved.');
+            }
+          } else {
+            this.toasterService.successToast('Form rejected and kept with current reviewer for resubmission.');
+          }
+
+          // Clear comment
+          this.newComment = '';
+
+          // Reload workflow data to reflect changes
+          setTimeout(() => {
+            this.loadWorkflowData();
+            this.loadSubmissionReviewers();
+          }, 1000);
+        } else if (response.stat === 403) {
+          console.error('❌ 403 Error - Backend validation failed');
+          console.error('❌ This suggests the backend needs to be updated');
+          this.toasterService.errorToast('Backend validation failed. Please contact administrator.');
+        } else {
+          console.error('❌ processDynamicReview failed:', response);
+          this.toasterService.errorToast(response.msg || `Error processing ${action}`);
+        }
+      },
+      error: (error: any) => {
+        console.error(`❌ Error processing ${action}:`, error);
+        this.toasterService.errorToast(`Error processing ${action}`);
+      }
+    });
+  }
+
+  // Approve and forward to next reviewer
+  approveAndForwardDynamic() {
+    this.processDynamicReview('approve');
+  }
+
+  // Reject and send back to operator
+  rejectAndSendBackDynamic() {
+    this.processDynamicReview('reject');
+  }
+
+  // Set the current reviewer for a dynamic workflow
+  setCurrentReviewer(userId: number) {
+    if (!this.workflowData?.data?.submission_id) {
+      console.warn('⚠️ Cannot set current reviewer: submission_id is missing.');
+      return;
+    }
+
+    console.log('🔧 Setting current reviewer...');
+    console.log('  - Submission ID:', this.workflowData.data.submission_id);
+    console.log('  - User ID:', userId);
+    console.log('  - Current workflow status:', this.currentStatus);
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString(),
+      user_id: userId
+    };
+
+    console.log('📤 Sending payload:', payload);
+
+    this.processExecutionService.setDynamicCurrentReviewer(payload).subscribe({
+      next: (response: any) => {
+        console.log('📥 Response received:', response);
+        if (response.stat === 200) {
+          this.isCurrentReviewer = true;
+          this.toasterService.successToast(`You are now the current reviewer for this form.`);
+          console.log('✅ Current reviewer set successfully');
+
+          // Don't automatically reload to prevent infinite loops
+          // Reload workflow data to get updated info
+          // setTimeout(() => {
+          //   this.loadWorkflowData();
+          //   this.loadDynamicCurrentReviewerInfo();
+          // }, 500);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Failed to set current reviewer.');
+          console.error('❌ Error setting current reviewer:', response.msg);
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Error setting current reviewer:', error);
+        this.toasterService.errorToast('Failed to set current reviewer.');
+      }
+    });
+  }
+
+  // Force set first reviewer as current if none is set
+  forceSetFirstReviewerAsCurrent() {
+    if (!this.workflowData?.data?.submission_id || this.currentStatus !== 'under_review') return;
+
+    const userData = localStorage.getItem('userData');
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    // Only for reviewers, not operators
+    if (this.userRole === 8) return;
+
+    console.log('🔧 forceSetFirstReviewerAsCurrent called');
+    console.log('  - User ID:', userId);
+    console.log('  - User Role:', this.userRole);
+
+    // Get the first reviewer from the reviewer assignments
+    if (this.reviewAssignments && this.reviewAssignments.length > 0) {
+      const firstReviewer = this.reviewAssignments[0];
+      console.log('🔍 First reviewer from assignments:', firstReviewer);
+
+      if (firstReviewer.reviewer_id == userId) {
+        console.log('🔧 User is first reviewer - setting as current');
+        this.setCurrentReviewer(userId);
+
+        // Force reload the reviewer info after setting current reviewer
+        setTimeout(() => {
+          this.loadDynamicCurrentReviewerInfo();
+        }, 500);
+      } else {
+        console.log('❌ User is not the first reviewer');
+        console.log('  - First reviewer ID:', firstReviewer.reviewer_id);
+        console.log('  - User ID:', userId);
+      }
+    } else {
+      console.log('❌ No reviewer assignments found');
+    }
+  }
+
+  // Force set current reviewer if they are assigned and the status is under_review
+  forceSetCurrentReviewer(userId: number) {
+    if (!this.workflowData?.data?.submission_id || this.currentStatus !== 'under_review') return;
+
+    console.log('🔧 forceSetCurrentReviewer called');
+    console.log('  - Submission ID:', this.workflowData.data.submission_id);
+    console.log('  - User ID:', userId);
+    console.log('  - Current Status:', this.currentStatus);
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString(),
+      user_id: userId
+    };
+
+    console.log('📤 Sending payload:', payload);
+
+    this.processExecutionService.setDynamicCurrentReviewer(payload).subscribe({
+      next: (response: any) => {
+        console.log('📥 Response received:', response);
+        if (response.stat === 200) {
+          this.isCurrentReviewer = true;
+          this.toasterService.successToast(`You are now the current reviewer for this form.`);
+          console.log('✅ Current reviewer set successfully');
+
+          // Don't automatically reload to prevent infinite loops
+          // Reload workflow data to get updated info
+          // setTimeout(() => {
+          //   this.loadWorkflowData();
+          //   this.loadDynamicCurrentReviewerInfo();
+          // }, 500);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Failed to set current reviewer.');
+          console.error('❌ Error setting current reviewer:', response.msg);
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Error setting current reviewer:', error);
+        this.toasterService.errorToast('Failed to set current reviewer.');
+      }
+    });
+  }
+
+  // Get current user ID from localStorage
+  getUserId(): number {
+    const userData = localStorage.getItem('userData');
+    return userData ? JSON.parse(userData).admin_id : 1;
+  }
+
+  // Temporary method to fix reviewer assignment for existing submissions
+  reassignReviewers() {
+    if (!this.workflowData?.data?.submission_id) {
+      this.toasterService.errorToast('No submission found');
+      return;
+    }
+
+    const payload = {
+      submission_id: this.workflowData.data.submission_id.toString()
+    };
+
+    console.log('🔧 Reassigning reviewers for submission:', payload);
+
+    this.processExecutionService.reassignReviewersForExistingSubmission(payload).subscribe({
+      next: (response: any) => {
+        if (response.stat === 200) {
+          this.toasterService.successToast('Reviewers reassigned successfully!');
+          console.log('✅ Reviewers reassigned:', response);
+
+          // Reload workflow data to reflect changes
+          setTimeout(() => {
+            this.loadWorkflowData();
+          }, 1000);
+        } else {
+          this.toasterService.errorToast(response.msg || 'Failed to reassign reviewers');
+          console.error('❌ Failed to reassign reviewers:', response);
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Error reassigning reviewers:', error);
+        this.toasterService.errorToast('Error reassigning reviewers');
+      }
+    });
+  }
 }

@@ -45,6 +45,10 @@ export class ElogbookComponent {
     this.setGenericTableColumns();
   }
 
+  assignElogbook(elogId: string) {
+    // Navigate to an assignment page/dialog similar to manage-process assignment
+    this.router.navigate(['/assign-elog'], { queryParams: { id: elogId } });
+  }
   ngOnInit() {
     // Optionally load from backend here
     const userData = localStorage.getItem('userData');

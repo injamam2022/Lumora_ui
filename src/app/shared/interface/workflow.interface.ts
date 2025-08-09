@@ -36,6 +36,7 @@ export interface FormComment {
   comment_text: string;
   created_date: string;
   del_status: number;
+  user_name?: string;
 }
 
 export interface WorkflowResponse {
@@ -59,4 +60,61 @@ export interface WorkflowUpdateRequest {
 export interface FormAssignmentRequest {
   submission_id: string;
   operator_id: string;
+}
+
+// Multi-user workflow interfaces
+export interface ReviewAssignment {
+  assignment_id: number;
+  submission_id: number;
+  reviewer_id: number;
+  reviewer_name: string;
+  review_sequence: number;
+  review_status: 'pending' | 'in_progress' | 'approved' | 'rejected';
+  review_date?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CurrentReviewerInfo {
+  current_reviewer_id: number;
+  review_sequence: number;
+  total_reviewers: number;
+  reviewer_list: number[];
+  current_assignment?: ReviewAssignment;
+}
+
+export interface ReviewerStatus {
+  is_current_reviewer: boolean;
+  is_assigned_reviewer: boolean;
+  current_reviewer_id: number;
+  review_sequence: number;
+  total_reviewers: number;
+}
+
+export interface MultiUserWorkflowResponse extends WorkflowResponse {
+  current_reviewer_info?: CurrentReviewerInfo;
+  review_assignments?: ReviewAssignment[];
+  reviewer_status?: ReviewerStatus;
+}
+
+// Admin interface for multi-user workflow
+export interface ReviewerAssignment {
+  submission_id: number;
+  reviewer_ids: number[];
+  assigned_by: number;
+  assigned_date: string;
+}
+
+export interface UserInfo {
+  admin_id: number;
+  admin_name: string;
+  role_id: number;
+  role_name?: string;
+}
+
+export interface AssignmentResponse {
+  stat: number;
+  msg: string;
+  data?: any;
 }

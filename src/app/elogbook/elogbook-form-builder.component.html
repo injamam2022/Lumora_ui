@@ -54,89 +54,140 @@
           </div>
         </div>
       </div>
-      <div class="button-wrap">
+      <div class="button-wrap" *ngIf="!showParameterSection">
         <button pButton type="button" class="p-button-primary" (click)="createElogs()">Submit</button>
       </div>
 
-      <!-- Parameter Management UI aligned with form -->
-      <app-elogbook-parameter-list [(parameters)]="parameterList"></app-elogbook-parameter-list>
+      <!-- Tabs to mirror Manage Process UI -->
+      <div class="form-builder-btn" *ngIf="showParameterSection">
+        <button type="button" (click)="setTab('processCreation')" [class.active]="activeTab === 'processCreation'">
+          <i class="pi pi-list"></i>
+          Process Creation
+        </button>
+        <button type="button" (click)="setTab('BranchingRules')" [class.active]="activeTab === 'BranchingRules'">
+          <i class="pi pi-sitemap"></i>
+          Branching Rules
+        </button>
+      </div>
 
-      <!-- Elogbook Branching Rules Section -->
-      <div class="elogbook-branching-rules-card">
-        <div class="branching-header-row">
-          <h3>Branching Rules</h3>
-        </div>
-        <div class="branching-add-rule-form">
-          <h4 class="branching-subtitle">Add New Rule</h4>
-          <div class="branching-form-row">
-            <div class="branching-form-group">
-              <label for="paramSelect">Parameter</label>
-              <select id="paramSelect" title="Select Parameter" [(ngModel)]="newRule.parameter_id" class="branching-dropdown">
-                <option value="" disabled selected>Select Parameter</option>
-                <option *ngFor="let param of parameterList" [value]="param.param_id">{{ param.parameter_name }}</option>
-              </select>
-            </div>
-            <div class="branching-form-group">
-              <label for="valueInput">Value</label>
-              <input id="valueInput" type="text" title="Enter Value" placeholder="Enter Value" [(ngModel)]="newRule.parameter_value" class="branching-input" />
-            </div>
-            <div class="branching-form-group">
-              <label for="operatorSelect">Operator</label>
-              <select id="operatorSelect" title="Select Operator" [(ngModel)]="newRule.operator" class="branching-dropdown">
-                <option *ngFor="let op of operatorOptions" [value]="op.value">{{ op.label }}</option>
-              </select>
-            </div>
-            <div class="branching-form-group">
-              <label for="actionTypeSelect">Action Type</label>
-              <select id="actionTypeSelect" title="Select Action Type" [(ngModel)]="newRule.action_type" class="branching-dropdown">
-                <option *ngFor="let act of actionTypeOptions" [value]="act.value">{{ act.label }}</option>
-              </select>
-            </div>
-            <div class="branching-form-group" *ngIf="newRule.action_type === 'hide_parameter'">
-              <label for="targetParamSelect">Target Parameter to Hide</label>
-              <select id="targetParamSelect" title="Select Target Parameter" [(ngModel)]="newRule.target_parameter_id" class="branching-dropdown">
-                <option value="" disabled selected>Select Target Parameter</option>
-                <option *ngFor="let param of parameterList" [value]="param.param_id">{{ param.parameter_name }}</option>
-              </select>
-            </div>
-            <div class="branching-form-group" *ngIf="newRule.action_type === 'display_message'">
-              <label for="displayMessage">Message to Display</label>
-              <input id="displayMessage" type="text" title="Enter Message" placeholder="Enter message here" [(ngModel)]="newRule.display_message_content" class="branching-input" />
-            </div>
-            <ng-container *ngIf="newRule.action_type === 'apply_validation'">
-              <div class="branching-form-group">
-                <label for="minValue">Min Value</label>
-                <input id="minValue" type="number" title="Min Value" placeholder="Min Value" [(ngModel)]="newRule.validation_min_value" class="branching-input" />
-              </div>
-              <div class="branching-form-group">
-                <label for="maxValue">Max Value</label>
-                <input id="maxValue" type="number" title="Max Value" placeholder="Max Value" [(ngModel)]="newRule.validation_max_value" class="branching-input" />
-              </div>
-              <div class="branching-form-group">
-                <label for="regexPattern">Regex Pattern</label>
-                <input id="regexPattern" type="text" title="Regex Pattern" placeholder="Regex Pattern" [(ngModel)]="newRule.validation_regex_pattern" class="branching-input" />
-              </div>
-              <div class="branching-form-group">
-                <label for="validationMsg">Validation Message</label>
-                <input id="validationMsg" type="text" title="Validation Message" placeholder="Validation Message" [(ngModel)]="newRule.validation_message_for_rule" class="branching-input" />
-              </div>
-            </ng-container>
-            <div class="branching-form-group branching-form-btn">
-              <button pButton type="button" class="p-button-success branching-add-btn" (click)="addBranchingRule()">Add Rule</button>
-            </div>
-          </div>
-        </div>
-        <div class="branching-rules-list" *ngIf="elogbookBranchingRules.length > 0">
-          <div *ngFor="let rule of elogbookBranchingRules" class="branching-rule-row">
-            <span class="branching-rule-if"><b>If</b> {{ rule.parameter_name }} = {{ rule.parameter_value }}</span>
-            <span *ngIf="rule.target_parameter_name" class="branching-rule-then">then <b>Hide</b> {{ rule.target_parameter_name }}</span>
-            <button pButton type="button" class="p-button-danger p-button-sm branching-delete-btn" (click)="deleteBranchingRule(rule.branching_rules_id)">Delete</button>
-          </div>
+      <!-- Process Creation: only parameter management for E-Logbook -->
+      <div *ngIf="activeTab === 'processCreation'">
+        <app-elogbook-parameter-list *ngIf="showParameterSection" [(parameters)]="parameterList"></app-elogbook-parameter-list>
+        <!--<p *ngIf="!showParameterSection" class="hint-note">Create and submit the E-Logbook header first to add parameters.</p>-->
+        <div class="button-wrap" *ngIf="showParameterSection">
+          <button pButton type="button" class="p-button-success" (click)="save()">Save E-Logbook</button>
         </div>
       </div>
 
-      <div class="button-wrap">
-        <button pButton type="button" class="p-button-success" (click)="save()">Save E-Logbook</button>
+      <!-- Branching Rules tab -->
+      <div class="elogbook-branching-rules-card" *ngIf="activeTab === 'BranchingRules'">
+        <div class="branching-header-row">
+          <h3>Branching Rules</h3>
+        </div>
+        <div *ngIf="!showParameterSection" class="hint-note">Create the E-Logbook first to configure branching rules.</div>
+        <ng-container *ngIf="showParameterSection">
+          <!-- Already Added Rules (match Manage Process) -->
+          <div *ngIf="elogbookBranchingRules && elogbookBranchingRules.length > 0" class="already-added-rules">
+            <h4 class="rules-title">Already Added Rules</h4>
+            <div class="rules-list">
+              <div *ngFor="let rule of elogbookBranchingRules" class="rule-card">
+                <div class="rule-header">
+                  <span class="if-label">IF Parameter:</span>
+                  <span class="parameter-name">{{ rule.parameter_name }}</span>
+                  <span class="arrow">➔</span>
+                  <span class="if-label">Value</span>
+                  <span class="parameter-value">{{ rule.parameter_value }}</span>
+                </div>
+                <div class="rule-body">
+                  <span class="if-label">Action:</span>
+                  <span class="action-detail" *ngIf="rule.action_type === 'hide_parameter'">
+                    Hide Parameter ➔ <b>{{ rule.target_parameter_name }}</b>
+                  </span>
+                  <span class="action-detail" *ngIf="rule.action_type === 'display_message'">
+                    Display Message ➔ <b>{{ rule.display_message_content }}</b>
+                  </span>
+                </div>
+                <button class="delete-btn" (click)="deleteBranchingRule(rule.branching_rules_id)">Delete</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="branching-add-rule-form">
+            <h4 class="branching-subtitle">Set New Rule #1</h4>
+            <div class="elog-rule-block" *ngFor="let block of ruleBlocks; let i = index">
+              <h4 class="branching-subtitle">Set New Rule #{{ i + 1 }}</h4>
+              <div class="form-group">
+                <label for="elogParam">Select Parameter</label>
+                <select id="elogParam" title="Select Parameter" [(ngModel)]="block.parameter_id" class="branching-dropdown">
+                  <option value="" disabled selected>Select Parameter</option>
+                  <option *ngFor="let param of parameterList" [value]="param.param_id">{{ param.parameter_name }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="elogValue">If Value of the Selected Parameter</label>
+                <input id="elogValue" type="text" title="Enter Value" placeholder="Enter Value" [(ngModel)]="block.parameter_value" class="branching-input" />
+              </div>
+
+              <div class="form-group">
+                <label for="elogOperator">Select Operator</label>
+                <select id="elogOperator" title="Select Operator" [(ngModel)]="block.operator" class="branching-dropdown">
+                  <option *ngFor="let op of operatorOptions" [value]="op.value">{{ op.label }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="elogAction">Select Action Type</label>
+                <select id="elogAction" title="Select Action Type" [(ngModel)]="block.action_type" class="branching-dropdown">
+                  <option *ngFor="let act of actionTypeOptions" [value]="act.value">{{ act.label }}</option>
+                </select>
+              </div>
+
+              <div class="form-group" *ngIf="block.action_type === 'hide_parameter'">
+                <label for="elogTarget">Target Parameter to Hide</label>
+                <select id="elogTarget" title="Select Target Parameter" [(ngModel)]="block.target_parameter_id" class="branching-dropdown">
+                  <option value="" disabled selected>Select Target Parameter</option>
+                  <option *ngFor="let param of parameterList" [value]="param.param_id">{{ param.parameter_name }}</option>
+                </select>
+              </div>
+
+              <div class="form-group" *ngIf="block.action_type === 'display_message'">
+                <label for="elogMsg">Message to Display</label>
+                <input id="elogMsg" type="text" title="Enter Message" placeholder="Enter message here" [(ngModel)]="block.display_message_content" class="branching-input" />
+              </div>
+
+              <ng-container *ngIf="false">
+                <div class="form-group">
+                  <label for="elogMin">Min Value</label>
+                  <input id="elogMin" type="number" title="Min Value" placeholder="Min Value" class="branching-input" />
+                </div>
+                <div class="form-group">
+                  <label for="elogMax">Max Value</label>
+                  <input id="elogMax" type="number" title="Max Value" placeholder="Max Value" class="branching-input" />
+                </div>
+                <div class="form-group">
+                  <label for="elogRegex">Regex Pattern</label>
+                  <input id="elogRegex" type="text" title="Regex Pattern" placeholder="Regex Pattern" class="branching-input" />
+                </div>
+                <div class="form-group">
+                  <label for="elogValMsg">Validation Message</label>
+                  <input id="elogValMsg" type="text" title="Validation Message" placeholder="Validation Message" class="branching-input" />
+                </div>
+              </ng-container>
+
+              <div class="button-wrapper">
+                <button type="button" class="add-btn" (click)="addRuleBlock()">
+                  <i class="pi pi-plus-circle"></i> Add Rule
+                </button>
+                <button *ngIf="i > 0" type="button" class="delete-btn" (click)="deleteRuleBlock(i)">Delete Rule</button>
+              </div>
+            </div>
+            <div class="button-global-wrapper">
+              <button type="button" class="submit-btn" (click)="submitAllElogRules()">Submit All Rules</button>
+            </div>
+          </div>
+
+        </ng-container>
       </div>
     </div>
   </div>
