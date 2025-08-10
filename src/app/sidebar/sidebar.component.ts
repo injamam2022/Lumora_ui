@@ -53,7 +53,6 @@ export class SidebarComponent implements OnInit {
     'role',
     'user',
     'manage-access',
-    'manage-process',
     'facility',
     'room',
     'material',
