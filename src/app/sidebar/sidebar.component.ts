@@ -2,9 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { PanelMenuModule } from 'primeng/panelmenu';
-import { GenericResolverHttpClientService } from '../shared/services/generic-reolver-http-client.service';
-import { CheckModuleAccessService } from '../shared/services/check-module-access.service';
-import { ModuleAccessSingle } from '../shared/interface/module-access.interface';
 
 @Component({
   selector: 'app-sidebar',
@@ -15,44 +12,58 @@ import { ModuleAccessSingle } from '../shared/interface/module-access.interface'
 })
 export class SidebarComponent implements OnInit {
   items: MenuItem[] = [];
-
   @Input() fetchSidebarClass = '';
 
-  public moduleAccess!: ModuleAccessSingle;
+  // 1) controller_name -> route path (no leading slash)
+  private routeMap: Record<string, string> = {
+    dashboard: 'dashboard',
+    'operational-control-tower': 'operational-control-tower',
 
-  constructor(
-    public genericResolverHttpClientService: GenericResolverHttpClientService,
-    public checkModuleAccessService: CheckModuleAccessService
-  ) {}
+    department: 'department',
+    role: 'role',
+    user: 'user',
+    'manage-access': 'manage-access',
 
-  getRouteForModule(mod: any): string {
-    switch ((mod.module_name || '').trim()) {
-      case 'Dashboard':
-        return 'dashboard';
-      case 'Manage Department':
-        return 'manage-department';
-      case 'Manage Role':
-        return 'manage-role';
-      case 'Manage  User':
-        return 'manage-user';
-      case 'User Access':
-        return 'user-access';
-      case 'Manage Process':
-        return 'manage-process';
-      case 'Manage Facility':
-        return 'manage-facility';
-      case 'Fixed Resource':
-        return 'fixed-resource';
-      case 'Portable Resource':
-        return 'portable-resource';
-      case 'Resource Management':
-        return 'resource-management';
-      default:
-        return (mod.controller_name || '').trim();
-    }
-  }
+    'manage-process': 'manage-process',
+    'process-creation': 'process-creation', // if ever needed
+    'stage-creation': 'stage-creation', // if ever needed
+    'branching-rules': 'branching-rules', // if ever needed
+    'parameter-creation': 'parameter-creation', // if ever needed
 
-  getIconForModule(mod: any): string {
+    facility: 'facility',
+    room: 'room',
+    material: 'material',
+    'resource-management': 'resource-management',
+    'fixed-resource': 'fixed-resource',
+    'portable-resource': 'portable-resource',
+
+    elogbook: 'elogbook',
+    'elogs-creation': 'elogs-creation', // if ever needed
+
+    'coo-dashboard': 'coo-dashboard',
+    'cluster-head': 'cluster-head',
+    'operator-dashboard': 'operator-dashboard',
+    'make-forms-entry': 'make-forms-entry', // if ever needed with :processId
+    module: 'module', // if you expose ModuleComponent
+  };
+
+  // 2) which controllers should be clubbed under “Masters”
+  private mastersControllers = new Set<string>([
+    'department',
+    'role',
+    'user',
+    'manage-access',
+    'manage-process',
+    'facility',
+    'room',
+    'material',
+    'resource-management',
+    'fixed-resource',
+    'portable-resource',
+  ]);
+
+  // 3) icon helper (still by module_name since that’s what you styled)
+  private getIconForModule(mod: any): string {
     switch ((mod.module_name || '').trim()) {
       case 'Dashboard':
         return 'pi pi-home';
@@ -68,15 +79,34 @@ export class SidebarComponent implements OnInit {
         return 'pi pi-cog';
       case 'Manage Facility':
         return 'pi pi-building';
-      case 'Fixed Resource':
+      case 'Room':
+        return 'pi pi-th-large';
+      case 'Material':
         return 'pi pi-box';
-      case 'Portable Resource':
-        return 'pi pi-mobile';
       case 'Resource Management':
         return 'pi pi-boxes';
+      case 'Fixed Resource':
+        return 'pi pi-table';
+      case 'Portable Resource':
+        return 'pi pi-mobile';
+      case 'E-Logbook ':
+        return 'pi pi-book';
+      case 'Operational Control Tower':
+        return 'pi pi-compass';
+      case 'COO Dashboard':
+        return 'pi pi-chart-bar';
+      case 'Cluster Head':
+        return 'pi pi-briefcase';
+      case 'Operator Dashboard':
+        return 'pi pi-gauge';
       default:
         return 'pi pi-folder';
     }
+  }
+
+  private getRouteForController(controller_name: string): string {
+    const key = (controller_name || '').trim();
+    return this.routeMap[key] ?? key; // fallback: use controller as path
   }
 
   ngOnInit() {
@@ -85,44 +115,25 @@ export class SidebarComponent implements OnInit {
     );
     const modules = (storedAccess || []).filter((m: any) => m?.view_status);
 
-    // 👉 Decide what lives under “Masters”
-    const mastersControllers = new Set<string>([
-      'department',
-      'role',
-      'user',
-      'manage-access',
-      'facility',
-      'material',
-      'resource-management',
-      'room',
-    ]);
-    // If you prefer DB-driven grouping, swap the predicate to:
-    // const isMaster = (m:any) => Number(m.module_status) === 0; // or whatever flag means "Master"
-    const isMaster = (m: any) =>
-      mastersControllers.has((m.controller_name || '').trim());
-
-    // Preserve order by priority_status if present
+    // keep your DB sort
     const sorted = [...modules].sort(
       (a, b) => Number(a.priority_status || 0) - Number(b.priority_status || 0)
     );
 
+    const isMaster = (m: any) =>
+      this.mastersControllers.has((m.controller_name || '').trim());
     const masters = sorted.filter(isMaster);
     const others = sorted.filter((m) => !isMaster(m));
 
     const toLeaf = (m: any): MenuItem => ({
       label: (m.module_name || '').trim(),
       icon: this.getIconForModule(m),
-      // use routerLink (SPA). If you need module_id in the URL, uncomment the second line.
-      routerLink: ['/', this.getRouteForModule(m)],
-      // routerLink: ['/', this.getRouteForModule(m), m.module_id],
+      // base path (no ID). If you want to pass :moduleId, append m.module_id here.
+      routerLink: ['/', this.getRouteForController(m.controller_name)],
     });
 
     const mastersNode: MenuItem | null = masters.length
-      ? {
-          label: 'Masters',
-          icon: 'pi pi-database',
-          items: masters.map(toLeaf),
-        }
+      ? { label: 'Masters', icon: 'pi pi-database', items: masters.map(toLeaf) }
       : null;
 
     this.items = [...others.map(toLeaf), ...(mastersNode ? [mastersNode] : [])];
