@@ -1,0 +1,52 @@
+<form #roleCreationForm="ngForm" (ngSubmit)="submitAllRoles()">
+  <div
+    class="formgroup"
+    *ngFor="let role of allListAssignedToWorkFlow.all_list; let i = index"
+    style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem"
+  >
+    <div class="">
+      <label>Work Flow Step {{ i + 1 }}</label>
+    </div>
+    <br />
+    <div class="">
+      <p-dropdown
+        [options]="allRoleData.all_list"
+        [(ngModel)]="role.role_id"
+        [name]="'role_' + i"
+        optionValue="role_id"
+        optionLabel="role_name"
+        placeholder="Select Role"
+        required
+      ></p-dropdown>
+    </div>
+
+    <button
+      type="button"
+      (click)="removeRole(i)"
+      *ngIf="allListAssignedToWorkFlow.all_list.length > 1"
+      pButton
+      icon="pi pi-trash"
+      class="p-button-rounded p-button-danger p-button-text"
+      aria-label="Remove"
+    ></button>
+  </div>
+
+  <div class="add-moore-button" style="margin-bottom: 1rem">
+    <button
+      type="button"
+      (click)="addAnotherRole()"
+      pButton
+      icon="pi pi-plus"
+      label="Add More"
+      class="p-button-text"
+    ></button>
+  </div>
+
+  <div class="buttonwrap">
+    <p-button
+      type="submit"
+      label="Submit"
+      [disabled]="roleCreationForm.form.invalid"
+    ></p-button>
+  </div>
+</form>

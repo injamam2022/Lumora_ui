@@ -121,6 +121,44 @@ export class ElogbookService {
     );
   }
 
+  // Assign elog to role
+  public assignElogToRole(assignElogToRole: any) {
+    let payload = { assign_elogs_to_role: { ...assignElogToRole } };
+
+    return this.baseHttpService.post<ProcessCreationSuccess>(
+      `General/Add`,
+      payload
+    );
+  }
+
+  // Get already assigned elog roles
+  public getAllAlreadyAssignedElogRoles(elogId: string): Observable<any> {
+    const payload = {
+      assign_elogs_to_role: { elogs_id: elogId },
+    };
+
+    return this.baseHttpService.post<any>(
+      'General/Get',
+      payload
+    );
+  }
+
+  // Get users by role
+  public getUsersByRole(roleId: string): Observable<any> {
+    const payload = { admin: { role_id: roleId }, };
+    return this.baseHttpService.post<any>('General/Get', payload);
+  }
+
+  public debugElogWorkflowStatus(elogsId: string): Observable<any> {
+    const payload = { elogs_id: elogsId };
+    return this.baseHttpService.post<any>('General/debugelogworkflowstatus', payload);
+  }
+
+  public forceCorrectElogStatus(elogsId: string): Observable<any> {
+    const payload = { elogs_id: elogsId };
+    return this.baseHttpService.post<any>('General/forcecorrectelogstatus', payload);
+  }
+
   public createStage(stagePayload: Stage) {
     let payload = { stage: { ...stagePayload } };
 
@@ -267,6 +305,166 @@ export class ElogbookService {
 
     public refreshTableData(refresh: boolean) {
     this.refreshElogbook$.next(true);
+  }
+
+
+
+  // Methods for dropdown data
+  public getAllProcess(): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetAllProcess`, {});
+  }
+
+  public getAllFacilities(): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetAllFacilities`, {});
+  }
+
+  public getAllDepartments(): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetAllDepartments`, {});
+  }
+
+  public getAllRooms(): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetAllRooms`, {});
+  }
+
+  public getAllMaterials(): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetAllMaterials`, {});
+  }
+
+  public getAllPortableResources(): Observable<any> {
+    return this.baseHttpService.post<any>(`General/GetAllPortableResources`, {});
+  }
+
+  // ==================== ELOG WORKFLOW METHODS ====================
+
+  // Check elog status
+  public checkElogStatus(elogsId: string, roleId: string): Observable<any> {
+    const payload = {
+      elogs_id: elogsId,
+      role_id: roleId
+    };
+    return this.baseHttpService.post<any>('General/CheckElogStatus', payload);
+  }
+
+
+
+
+
+  // Assign elog dynamic reviewers
+  public assignElogDynamicReviewers(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/AssignElogDynamicReviewers', payload);
+  }
+
+  // Get elog dynamic current reviewer
+  public getElogDynamicCurrentReviewer(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/GetElogDynamicCurrentReviewer', payload);
+  }
+
+  // Process elog dynamic review
+  public processElogDynamicReview(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/ProcessElogDynamicReview', payload);
+  }
+
+  // Get elog submission reviewers
+  public getElogSubmissionReviewers(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/GetElogSubmissionReviewers', payload);
+  }
+
+  // ==================== MISSING ELOG WORKFLOW METHODS ====================
+
+  // Get elog submission with workflow data
+  public getElogSubmissionWithWorkflow(elogsId: string): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      elogs_id: elogsId,
+      user_id: userId,
+      user_role: userRole
+    };
+    return this.baseHttpService.post<any>('General/GetElogSubmissionWithWorkflow', payload);
+  }
+
+  // Update elog workflow status
+  public updateElogWorkflowStatus(submissionId: string, newStatus: string, comment?: string): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      submission_id: submissionId,
+      new_status: newStatus,
+      comment: comment || '',
+      user_id: userId,
+      user_role: userRole
+    };
+    return this.baseHttpService.post<any>('General/UpdateElogWorkflowStatus', payload);
+  }
+
+  // Save elog form data
+  public submitElogFormData(formData: any): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    // Add user data to the form data
+    const payload = {
+      ...formData,
+      user_id: userId,
+      user_role: userRole
+    };
+
+    console.log('Saving elog form with payload:', payload);
+    return this.baseHttpService.post<any>('General/SaveElogSubmission', payload);
+  }
+
+  // Submit elog for review
+  public submitElogForReview(elogsId: string): Observable<any> {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('userData');
+    const userRole = userData ? JSON.parse(userData).role_id : 1;
+    const userId = userData ? JSON.parse(userData).admin_id : 1;
+
+    const payload = {
+      elogs_id: elogsId,
+      user_id: userId,
+      user_role: userRole
+    };
+
+    console.log('Submitting elog for review with payload:', payload);
+    return this.baseHttpService.post<any>('General/SubmitElogForReview', payload);
+  }
+
+  // Get complete elog form data
+  public getCompleteElogData(elogsId: string): Observable<any> {
+    const payload = { elogs_id: elogsId };
+    console.log('Calling getCompleteElogData with payload:', payload);
+    return this.baseHttpService.post<any>('General/get_complete_elog_data', payload);
+  }
+
+  // Debug method to check elog submissions
+  public debugElogSubmissions(elogsId: string): Observable<any> {
+    const payload = { elogs_id: elogsId };
+    console.log('Debugging elog submissions for:', elogsId);
+    return this.baseHttpService.post<any>('General/DebugElogSubmissions', payload);
+  }
+
+  // Get elog submissions
+  public getElogSubmissions(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/Get', payload);
+  }
+
+  // Set elog dynamic current reviewer
+  public setElogDynamicCurrentReviewer(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/SetElogDynamicCurrentReviewer', payload);
+  }
+
+  // Reassign elog reviewers for existing submission
+  public reassignElogReviewersForExistingSubmission(payload: any): Observable<any> {
+    return this.baseHttpService.post<any>('General/ReassignElogReviewersForExistingSubmission', payload);
   }
 }
 

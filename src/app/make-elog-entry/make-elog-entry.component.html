@@ -1,0 +1,478 @@
+<app-sidebar></app-sidebar>
+<app-header></app-header>
+
+<section class="user-main-content">
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    <div class="loading-message">
+      {{ loadingMessage }}
+    </div>
+  </div>
+
+  <!-- Main Form Content (hidden while loading) -->
+  <div *ngIf="!isLoading" class="form-content">
+  <!-- Workflow Status Section -->
+  <div class="workflow-status-section">
+      <h3><i class="pi pi-info-circle"></i> E-Logbook Workflow Status</h3>
+    <div class="status-badge" [class]="currentStatus">
+      <strong>STATUS: {{ currentStatus.toUpperCase() }}</strong>
+    </div>
+  </div>
+
+  <!-- Workflow Actions Section -->
+  <div class="workflow-actions-section">
+    <h3><i class="pi pi-cog"></i> Workflow Actions</h3>
+
+    <!-- Operator Actions (Role 8) -->
+    <div *ngIf="userRole === 8" class="operator-actions">
+      <!-- Save Form Button -->
+      <button
+        *ngIf="isFormEditable"
+        type="button"
+        class="btn btn-success"
+        (click)="submitForm()">
+        <i class="fas fa-save"></i> Save Form
+      </button>
+
+      <!-- Submit for Review Button -->
+      <button
+        *ngIf="canSubmit && (currentStatus === 'assigned' || currentStatus === 'in_progress')"
+        type="button"
+        class="btn btn-info"
+        (click)="submitForReview()">
+        <i class="fas fa-paper-plane"></i> Submit for Review
+      </button>
+
+      <!-- Resubmit for Review Button
+      <button
+        *ngIf="canSubmit && currentStatus === 'rejected'"
+        type="button"
+        class="btn btn-warning"
+        (click)="resubmitForReview()">
+        <i class="fas fa-redo"></i> Resubmit for Review
+      </button>-->
+    </div>
+
+    <!-- Reviewer Actions -->
+      <div *ngIf="userRole !== 8 && (currentStatus === 'submitted' || currentStatus === 'under_review')" class="reviewer-actions">
+        <div class="reviewer-info">
+          <div *ngIf="isCurrentReviewer" class="current-reviewer">
+            <i class="fas fa-user-check"></i> You are the current reviewer ({{ reviewSequence }} of {{ totalReviewers }})
+          </div>
+          <div *ngIf="!isCurrentReviewer && isAssignedReviewer" class="waiting-reviewer">
+            <i class="fas fa-clock"></i> Waiting for your turn in the review sequence
+          </div>
+          <div *ngIf="!isAssignedReviewer" class="single-reviewer">
+            <i class="fas fa-user"></i> You are a reviewer (Role {{ userRole }}) - Single reviewer mode
+          </div>
+        </div>
+
+        <!-- Review Comment Section -->
+        <div class="comments-section">
+          <h4><i class="fas fa-comment"></i> Review Comment</h4>
+          <textarea
+            [(ngModel)]="newComment"
+            placeholder="Enter your review comment..."
+            rows="4"
+            [disabled]="hasReviewed || !(shouldBeCurrentReviewer || (reviewSequence === 1 && isAssignedReviewer && currentStatus === 'under_review')) || userRole === 8"
+            class="form-control">
+          </textarea>
+        </div>
+
+
+
+      <!-- Reviewer Action Buttons -->
+      <div class="reviewer-buttons" *ngIf="!hasReviewed && (shouldBeCurrentReviewer || (reviewSequence === 1 && isAssignedReviewer && currentStatus === 'under_review')) && userRole !== 8">
+      <button
+        type="button"
+        class="btn btn-success"
+          (click)="approveAndForwardDynamic()"
+          [disabled]="!newComment.trim()">
+        <i class="fas fa-check"></i> Approve & Forward
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger"
+          (click)="rejectAndSendBackDynamic()"
+          [disabled]="!newComment.trim()">
+          <i class="fas fa-times"></i> Reject & Send Back
+      </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Sequence Display -->
+  <div *ngIf="currentStatus === 'under_review' || reviewAssignments.length > 0" class="review-assignments">
+    <h3><i class="fas fa-list-ol"></i> Review Sequence</h3>
+    <div class="assignment-list">
+      <div *ngIf="reviewAssignments.length === 0" class="no-assignments">
+        <i class="fas fa-clock"></i> Reviewers are being assigned. Please wait...
+      </div>
+      <div
+        *ngFor="let assignment of reviewAssignments; let i = index"
+        class="assignment-item"
+        [class.current]="assignment.review_sequence === reviewSequence"
+        [class.completed]="assignment.review_status === 'approved'"
+        [class.pending]="assignment.review_status === 'pending'">
+        <div class="sequence-number">{{ assignment.review_sequence }}</div>
+        <div class="reviewer-name">{{ assignment.reviewer_name }}</div>
+        <div class="status-badge" [class]="assignment.review_status">
+          {{ assignment.review_status }}
+        </div>
+        <!--<div *ngIf="assignment.review_comment" class="review-comment">
+          {{ assignment.review_comment }}
+        </div>-->
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Messages -->
+  <div class="status-message status-message-submitted" *ngIf="userRole === 8 && currentStatus === 'submitted'">
+    <i class="pi pi-info-circle"></i>
+    Form submitted for review. You can no longer edit this form until it's returned for revision.
+  </div>
+
+  <div class="status-message status-message-approved" *ngIf="userRole === 8 && currentStatus === 'approved'">
+    <i class="pi pi-check-circle"></i>
+    Form has been approved. No further action required.
+  </div>
+
+  <div class="status-message status-message-readonly" *ngIf="userRole === 8 && !isFormEditable">
+    <i class="pi pi-lock"></i>
+    This form is currently read-only. You cannot make changes at this time.
+  </div>
+
+  <div class="status-message status-message-under-review" *ngIf="userRole === 8 && currentStatus === 'under_review'">
+    <i class="pi pi-clock"></i>
+    Form is under review by assigned reviewers. You cannot edit until the review process is complete.
+  </div>
+
+  <div class="status-message status-message-rejected" *ngIf="userRole === 8 && currentStatus === 'rejected'">
+    <i class="pi pi-exclamation-triangle"></i>
+    Form has been rejected. Please review the comments and make necessary changes before resubmitting.
+  </div>
+
+  <div class="status-message status-message-in-progress" *ngIf="userRole === 8 && currentStatus === 'in_progress'">
+    <i class="pi pi-pencil"></i>
+    Form is in progress. You can edit and save your work.
+  </div>
+
+  <!-- Comments Section -->
+  <div class="comments-section" *ngIf="comments.length > 0">
+    <h3>Comments</h3>
+    <div class="comment-list">
+      <div class="comment-item" *ngFor="let comment of comments">
+        <div class="comment-header">
+          <span class="comment-author">{{ (comment.user_name || comment.user_role) | titlecase }}</span>
+          <span class="comment-date">{{ comment.created_date | date:'short' }}</span>
+        </div>
+        <div class="comment-text">{{ comment.comment_text }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E-Logbook Information Section -->
+  <div class="static-fields-wrap" *ngIf="elogData">
+    <h2 class="section-heading">E-Logbook: {{ elogData.elogs_name }}</h2>
+
+    <!-- E-Logbook Details
+    <div class="elog-details">
+      <p><strong>E-Logbook Name:</strong> {{ elogData.elogs_name }}</p>
+      <p><strong>Reference Document:</strong> {{ elogData.reference_document }}</p>
+      <p><strong>SOP ID:</strong> {{ elogData.sop_id }}</p>
+      <p><strong>Format Number:</strong> {{ elogData.format_number }}</p>
+      <p><strong>Data Source:</strong> <span [style.color]="isUsingRealData ? '#28a745' : '#ffc107'">{{ isUsingRealData ? 'Database' : 'Mock Data' }}</span></p>
+  </div>-->
+
+    <!-- Facility, Department, Room, Material Fields -->
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form">
+          <label>Facility *</label>
+          <p-dropdown
+            [options]="facilities"
+            [(ngModel)]="selectedFacility"
+            optionLabel="location_name"
+            placeholder="Select Facility"
+            [filter]="true"
+            (onChange)="onFacilityChange()"
+            [appendTo]="'body'"
+            class="form-control"
+            [disabled]="!isFormEditable">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-col">
+        <div class="form">
+          <label>Department *</label>
+          <p-dropdown
+            [options]="departments"
+            [(ngModel)]="selectedDepartment"
+            optionLabel="department_name"
+            placeholder="Select Department"
+            [filter]="true"
+            (onChange)="onDepartmentChange()"
+            [appendTo]="'body'"
+            class="form-control"
+            [disabled]="!isFormEditable">
+          </p-dropdown>
+        </div>
+      </div>
+
+      <div class="form-col">
+        <div class="form">
+          <label>Room *</label>
+          <p-dropdown
+            [options]="rooms"
+            [(ngModel)]="selectedRoom"
+            optionLabel="room_name"
+            placeholder="Select Room"
+            [filter]="true"
+            (onChange)="onRoomChange()"
+            [appendTo]="'body'"
+            class="form-control"
+            [disabled]="!isFormEditable">
+          </p-dropdown>
+        </div>
+        </div>
+      </div>
+
+    <div class="form-row">
+      <div class="form-col">
+        <div class="form">
+          <label>Material *</label>
+          <p-dropdown
+            [options]="materials"
+            [(ngModel)]="selectedMaterial"
+            optionLabel="product_name"
+            placeholder="Select Material"
+            [filter]="true"
+            (onChange)="onMaterialChange()"
+            [appendTo]="'body'"
+            class="form-control"
+            [disabled]="!isFormEditable">
+          </p-dropdown>
+      </div>
+    </div>
+
+      <div class="form-col">
+        <div class="form">
+          <label>Material Description</label>
+          <textarea
+            class="form-control"
+            [value]="materialDescription"
+            readonly
+            placeholder="Material description will appear here">
+          </textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource Management Table Section -->
+  <div class="resource-table-section">
+    <h3 class="table-heading">Resource Management</h3>
+
+    <!-- Fixed Resource Table -->
+    <div class="resource-table-container" *ngIf="selectedRoom">
+      <h4 class="resource-section-title">Fixed Resource</h4>
+      <div class="table-wrapper">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Resource ID</th>
+              <th>Resource Description</th>
+              <th>Digital Clock</th>
+              <th colspan="4">Activity</th>
+            </tr>
+            <tr class="sub-header">
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Start</th>
+              <th>Stop</th>
+              <th>Pause</th>
+              <th>Resume</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let resource of roomFixedResources; let i = index" class="resource-row">
+              <td>{{ resource.resource_id }}</td>
+              <td>{{ resource.resource_name }}</td>
+              <td class="digital-clock">
+                <div class="clock-display">
+                  {{ digitalClocks[resource.resource_id + '_' + resource.resource_name] || '00:00:00' }}
+          </div>
+              </td>
+              <td>
+                <button class="activity-btn start-btn"
+                        [class.active]="resource.activities?.start"
+                        [disabled]="resource.activities?.stop || !isFormEditable"
+              (click)="toggleActivity(resource, 'start')">
+                  Start
+            </button>
+              </td>
+              <td>
+                <button class="activity-btn stop-btn"
+                        [class.active]="resource.activities?.stop"
+                        [disabled]="!resource.activities?.start || !isFormEditable"
+              (click)="toggleActivity(resource, 'stop')">
+                  Stop
+            </button>
+              </td>
+              <td>
+                <button class="activity-btn pause-btn"
+                        [class.active]="resource.activities?.pause"
+                        [disabled]="!resource.activities?.start || resource.activities?.stop || !isFormEditable"
+              (click)="toggleActivity(resource, 'pause')">
+                  Pause
+            </button>
+              </td>
+              <td>
+                <button class="activity-btn resume-btn"
+                        [class.active]="resource.activities?.resume"
+                        [disabled]="!resource.activities?.pause || resource.activities?.stop || !isFormEditable"
+              (click)="toggleActivity(resource, 'resume')">
+                  Resume
+            </button>
+              </td>
+            </tr>
+            <tr class="add-row">
+              <td colspan="7">
+                <!-- <button class="add-resource-btn" (click)="addFixedResource()">
+                  Add Fixed Resource
+                </button>-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Portable Resource Table -->
+    <div class="resource-table-container" *ngIf="selectedRoom">
+      <h4 class="resource-section-title">Portable Resource</h4>
+
+      <!-- Portable Resource Selection Dropdown -->
+      <div class="resource-selection-wrapper">
+        <label class="resource-selection-label">Select Portable Resources:</label>
+        <p-multiSelect
+          [options]="allPortableResources"
+          [(ngModel)]="selectedPortableResources"
+          optionLabel="resource_name"
+          [dataKey]="'resource_id'"
+          placeholder="Select Portable Resources to display in table"
+          [filter]="true"
+          [appendTo]="'body'"
+          class="resource-selection-dropdown"
+          (onChange)="onPortableResourceSelectionChange()"
+          [disabled]="!isFormEditable"
+        ></p-multiSelect>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="resource-table">
+          <thead>
+            <tr>
+              <th>Resource ID</th>
+              <th>Resource Description</th>
+              <th>Digital Clock</th>
+              <th colspan="4">Activity</th>
+            </tr>
+            <tr class="sub-header">
+              <th></th>
+              <th></th>
+              <th></th>
+              <th>Start</th>
+              <th>Stop</th>
+              <th>Pause</th>
+              <th>Resume</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let resource of selectedPortableResources; let i = index" class="resource-row">
+              <td>{{ resource.resource_id }}</td>
+              <td>{{ resource.resource_name }}</td>
+              <td class="digital-clock">
+                <div class="clock-display">
+                  {{ digitalClocks[resource.resource_id + '_' + resource.resource_name] || '00:00:00' }}
+          </div>
+              </td>
+              <td>
+                <button class="activity-btn start-btn"
+                        [class.active]="resource.activities?.start"
+                        [disabled]="resource.activities?.stop || !isFormEditable"
+              (click)="toggleActivity(resource, 'start')">
+                  Start
+            </button>
+              </td>
+              <td>
+                <button class="activity-btn stop-btn"
+                        [class.active]="resource.activities?.stop"
+                        [disabled]="!resource.activities?.start || !isFormEditable"
+              (click)="toggleActivity(resource, 'stop')">
+                  Stop
+            </button>
+              </td>
+              <td>
+                <button class="activity-btn pause-btn"
+                        [class.active]="resource.activities?.pause"
+                        [disabled]="!resource.activities?.start || resource.activities?.stop || !isFormEditable"
+              (click)="toggleActivity(resource, 'pause')">
+                  Pause
+            </button>
+              </td>
+              <td>
+                <button class="activity-btn resume-btn"
+                        [class.active]="resource.activities?.resume"
+                        [disabled]="!resource.activities?.pause || resource.activities?.stop || !isFormEditable"
+              (click)="toggleActivity(resource, 'resume')">
+                  Resume
+            </button>
+              </td>
+            </tr>
+            <tr class="add-row">
+              <td colspan="7">
+                <!--<button class="add-resource-btn" (click)="addPortableResource()">
+                  Add Portable Resource
+                </button>-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic E-Logbook Parameters Section -->
+  <div class="dynamic-process-wrap" *ngIf="elogData?.parameters">
+    <h3 class="stage-heading">E-Logbook Parameters</h3>
+    <div class="form-row">
+      <div class="form-col" *ngFor="let param of elogData?.parameters || []; trackBy: trackByParameterId">
+        <div class="form">
+          <label [attr.for]="'param-' + (param?.param_id || '')">{{ param?.parameter_name }}</label>
+          <ng-container [ngSwitch]="param?.parameter_type_id">
+            <input *ngSwitchCase="'1'" type="text" class="form-control" [attr.id]="'param-' + (param?.param_id || '')" placeholder="{{ param?.parameter_description || ('Enter ' + (param?.parameter_name || '')) }}" [(ngModel)]="formData[param?.param_id || '']" [attr.aria-label]="param?.parameter_name || 'text'" [title]="param?.parameter_name || 'Text'" [disabled]="!isFormEditable" />
+            <textarea *ngSwitchCase="'2'" class="form-control" [attr.id]="'param-' + (param?.param_id || '')" placeholder="{{ param?.parameter_description || ('Enter ' + (param?.parameter_name || '')) }}" [(ngModel)]="formData[param?.param_id || '']" [attr.aria-label]="param?.parameter_name || 'textarea'" [title]="param?.parameter_name || 'Textarea'" [disabled]="!isFormEditable"></textarea>
+            <input *ngSwitchCase="'3'" type="date" class="form-control" [attr.id]="'param-' + (param?.param_id || '')" [(ngModel)]="formData[param?.param_id || '']" [attr.aria-label]="param?.parameter_name || 'date'" [title]="param?.parameter_name || 'Date'" placeholder="{{ param?.parameter_description || 'Select date' }}" [disabled]="!isFormEditable" />
+            <input *ngSwitchCase="'4'" type="number" class="form-control" [attr.id]="'param-' + (param?.param_id || '')" placeholder="{{ param?.parameter_description || ('Enter ' + (param?.parameter_name || '')) }}" [(ngModel)]="formData[param?.param_id || '']" [attr.aria-label]="param?.parameter_name || 'number'" [title]="param?.parameter_name || 'Number'" [disabled]="!isFormEditable" />
+            <select *ngSwitchCase="'5'" class="form-control" [attr.id]="'param-' + (param?.param_id || '')" [(ngModel)]="formData[param?.param_id || '']" [attr.aria-label]="param?.parameter_name || 'select'" title="Select option" [disabled]="!isFormEditable">
+              <option *ngFor="let opt of param?.options" [value]="opt">{{ opt }}</option>
+            </select>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Button -->
+  <!--<div class="form-submit-wrap" *ngIf="canSubmit">
+    <button type="submit" class="submit-btn" (click)="submitForm()">Save Form</button>
+  </div>-->
+
+  </div> <!-- End of form-content -->
+</section>

@@ -14,6 +14,8 @@ import { EntityIdMapping } from '../shared/enum/entity-is-mapping.enum';
 import { ParameterManagementComponent } from '../shared/components/parameter-management/parameter-management/parameter-management.component';
 import { FilterMatchMode } from 'primeng/api';
 import { ToasterService } from '../shared/services/toaster.service';
+import { AssignToRoleComponent } from '../assign-to-role/assign-to-role.component';
+import { AssignElogToRoleComponent } from '../assign-to-role/assign-elog-to-role.component';
 
 @Component({
   selector: 'app-elogbook',
@@ -25,7 +27,9 @@ import { ToasterService } from '../shared/services/toaster.service';
     GenericTableComponent,
     CommonModule,
     ElogbookFormBuilderComponent,
-    ParameterManagementComponent
+    ParameterManagementComponent,
+    AssignToRoleComponent,
+    AssignElogToRoleComponent
   ],
   providers: [DialogService],
   templateUrl: './elogbook.component.html',
@@ -40,14 +44,57 @@ export class ElogbookComponent {
 
   public entityIdMapping = EntityIdMapping;
 
+  // Role-based button visibility properties
+  public isAdmin: boolean = false;
+  public showAddButton: boolean = false;
+  public showDeleteButton: boolean = false;
+  public showAssignButton: boolean = false;
+  public showEditButton: boolean = true; // Always show edit button
+
   constructor(private dialogService: DialogService, private elogbookService: ElogbookService, public router: Router, public toasterService: ToasterService,) {
+    this.checkUserRole();
     this.getElogbookList();
     this.setGenericTableColumns();
   }
 
+  // Check user role and set button visibility
+  private checkUserRole() {
+    const userData = localStorage.getItem('userData');
+    const user = userData ? JSON.parse(userData) : {};
+    const roleId = user.role_id;
+
+    // Support multiple admin role IDs
+    const adminRoleIds = ['admin', '1']; // Add all admin role IDs here
+    this.isAdmin = adminRoleIds.includes(roleId);
+
+    // Set button visibility based on role
+    this.showAddButton = this.isAdmin;
+    this.showDeleteButton = this.isAdmin;
+    this.showAssignButton = this.isAdmin;
+    this.showEditButton = true; // Always show edit button for all users
+
+    console.log('🔐 User role check:', {
+      roleId: roleId,
+      isAdmin: this.isAdmin,
+      showAddButton: this.showAddButton,
+      showDeleteButton: this.showDeleteButton,
+      showAssignButton: this.showAssignButton,
+      showEditButton: this.showEditButton
+    });
+  }
+
   assignElogbook(elogId: string) {
-    // Navigate to an assignment page/dialog similar to manage-process assignment
-    this.router.navigate(['/assign-elog'], { queryParams: { id: elogId } });
+    // Security check - only admin can assign E-Logbook
+    if (!this.isAdmin) {
+      this.toasterService.errorToast('Access denied. Only administrators can assign E-Logbook entries.');
+      return;
+    }
+    // Open elog-specific assignment dialog
+    this.dialogService.open(AssignElogToRoleComponent, {
+      data: { processId: elogId }, // Using processId for elogId
+      header: 'Assign E-Logbook to Roles',
+      width: '40%',
+    });
   }
   ngOnInit() {
     // Optionally load from backend here
@@ -63,10 +110,28 @@ export class ElogbookComponent {
   }
 
   public editParticularData(editId: string) {
-    this.router.navigate(['/elogs-creation'], { queryParams: { id: editId } });
+    const userData = localStorage.getItem('userData');
+    const user = userData ? JSON.parse(userData) : {};
+    const roleId = user.role_id;
+    const userId = user.admin_id;
+
+    // Support multiple admin role IDs
+    const adminRoleIds = ['admin', '1']; // Add all admin role IDs here
+    if (adminRoleIds.includes(roleId)) {
+      this.router.navigate(['/elogs-creation'], { queryParams: { id: editId } });
+      return;
+    }
+
+    // For regular users, navigate to make-elog-entry (form entry)
+    this.router.navigate(['/make-elog-entry/' + editId]);
   }
 
   openAddElogbookPage() {
+    // Security check - only admin can add E-Logbook
+    if (!this.isAdmin) {
+      this.toasterService.errorToast('Access denied. Only administrators can add E-Logbook entries.');
+      return;
+    }
     this.router.navigate(['/elogs-creation']);
   }
 
@@ -120,7 +185,12 @@ export class ElogbookComponent {
   }
 
   getElogbookList() {
-    this.elogbookService.getAllElogBook().subscribe({
+    // Get user data to pass role ID for filtering
+    const userData = localStorage.getItem('userData');
+    const user = userData ? JSON.parse(userData) : {};
+    const roleId = user.role_id || '1'; // Default to admin role if not found
+
+    this.elogbookService.getAllElogBook(roleId).subscribe({
       next: (response: any) => {
         this.allElogbookListData = response;
       },
@@ -131,22 +201,30 @@ export class ElogbookComponent {
   }
 
   public deleteParticularData(deleteId: string) {
-    console.log('Delete ID:', deleteId);
-      this.elogbookService.deleteElogbook(deleteId).subscribe((response) => {
-        console.log(response);
-        if (response.stat === 200) {
-          this.toasterService.successToast('Deleted Successfully');
-          this.elogbookService.refreshTableData(true);
-          this.getElogbookList();
-        } /*else {
-            alert('Failed to delete E-Logbook');
-          }*/
-        }
-        /*error: () => {
-          alert('Error deleting E-Logbook');
-        }*/
+    // Security check - only admin can delete E-Logbook
+    if (!this.isAdmin) {
+      this.toasterService.errorToast('Access denied. Only administrators can delete E-Logbook entries.');
+      return;
+    }
 
-    );
+    console.log('Delete ID:', deleteId);
+    this.elogbookService.deleteElogbook(deleteId).subscribe((response) => {
+      console.log(response);
+      if (response.stat === 200) {
+        this.toasterService.successToast('Deleted Successfully');
+        this.elogbookService.refreshTableData(true);
+        this.getElogbookList();
+      } /*else {
+          alert('Failed to delete E-Logbook');
+        }*/
+      }
+      /*error: () => {
+        alert('Error deleting E-Logbook');
+      }*/
+
+  );
 
   }
+
+
 }

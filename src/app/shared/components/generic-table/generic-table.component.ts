@@ -138,6 +138,8 @@ export class GenericTableComponent {
     this.assignEvent.emit(id);
   }
 
+
+
   public getEntityId(tableEntryData: Entity, entityIdMapped: EntityIdMapping) {
     console.log('=== GET ENTITY ID ===');
     console.log('Table entry data:', tableEntryData);

@@ -1,23 +1,22 @@
 <app-sidebar></app-sidebar>
 <app-header></app-header>
 <section class="user-main-content">
-  <div class="add-user-button">
+  <!-- Add E-Logbook button - only visible to admin (role 1) -->
+  <div class="add-user-button" *ngIf="showAddButton">
     <p-button (onClick)="openAddElogbookPage()" label="Add E-Logbook" />
   </div>
 
   <app-generic-table
-
     *ngIf="allElogbookListData"
     [genericTableColumns]="genericTableColumns"
     [genericTableData]="allElogbookListData"
     [entityIdMapping]="entityIdMapping.Elogbook"
-    [editButtonStatus]="true"
-    [deleteButtonStatus]="true"
-    [assignButtonStatus]="true"
+    [editButtonStatus]="showEditButton"
+    [deleteButtonStatus]="showDeleteButton"
+    [assignButtonStatus]="showAssignButton"
     (editEvent)="editParticularData($event)"
     (deleteEvent)="deleteParticularData($event)"
     (assignEvent)="assignElogbook($event)"
   ></app-generic-table>
-
 
 </section>

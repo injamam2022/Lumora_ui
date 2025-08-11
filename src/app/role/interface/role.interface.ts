@@ -91,5 +91,6 @@ export interface ListOfRoles {
   assign_process_to_role_id: string;
   process_id: string;
   role_id: string;
+  assigned_user_id?: string; // Optional field for E-Logbook user assignment
   del_status: string;
 }

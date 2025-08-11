@@ -21,6 +21,8 @@ import { BranchingRulesComponent } from './branching-rules/branching-rules.compo
 import { ProcessCreationComponent } from './process-creation/process-creation.component';
 import { ElogbookComponent } from './elogbook/elogbook.component';
 import { ElogbookFormBuilderComponent } from './elogbook/elogbook-form-builder.component';
+import { MakeElogEntryComponent } from './make-elog-entry/make-elog-entry.component';
+
 import { OperationalControlTowerComponent } from './operational-control-tower/operational-control-tower.component';
 import { CooDashboardComponent } from './coo-dashboard/coo-dashboard.component';
 import { ClusterHeadComponent } from './cluster-head/cluster-head.component';
@@ -214,6 +216,12 @@ export const routes: Routes = [
     component: ElogbookFormBuilderComponent,
     canActivate: [],
   },
+  {
+    path: 'make-elog-entry/:elogsId',
+    component: MakeElogEntryComponent,
+    canActivate: [],
+  },
+
   {
     path: 'manage-process/:manageProcessModuleId',
     component: ManageProcessComponent,

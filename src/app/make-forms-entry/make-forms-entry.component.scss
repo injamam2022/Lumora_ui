@@ -1808,3 +1808,119 @@
     }
   }
 
+// Save Form and Submit for Review Button Styles
+.operator-actions {
+  .btn {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &.btn-success {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      border-color: #28a745;
+
+      &:hover {
+        background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+        border-color: #1e7e34;
+      }
+
+      i {
+        margin-right: 8px;
+        font-size: 16px;
+      }
+    }
+
+    &.btn-info {
+      background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+      color: white;
+      border-color: #17a2b8;
+
+      &:hover {
+        background: linear-gradient(135deg, #138496 0%, #5a32a3 100%);
+        border-color: #117a8b;
+      }
+
+      i {
+        margin-right: 8px;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+// Accept and Reject Button Styles (Reviewer Actions)
+.reviewer-actions {
+  .reviewer-buttons {
+    .btn {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      &.btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-color: #28a745;
+
+        &:hover {
+          background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+          border-color: #1e7e34;
+        }
+
+        i {
+          margin-right: 8px;
+          font-size: 16px;
+        }
+      }
+
+      &.btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        color: white;
+        border-color: #dc3545;
+
+        &:hover {
+          background: linear-gradient(135deg, #c82333 0%, #d63384 100%);
+          border-color: #bd2130;
+        }
+
+        i {
+          margin-right: 8px;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}
+
